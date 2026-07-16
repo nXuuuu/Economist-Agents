@@ -1,0 +1,10 @@
+crewai
+langchain-google-genai
+yfinance
+pandas
+python-dotenv
+beautifulsoup4
+requests
+fpdf2
+flask
+supabase

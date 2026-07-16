@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINHUBKH — Quantum Macro Desk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Press+Start+2P&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6; /* Modern light gray background */
+            --panel-bg: #e5e7eb; /* Silver gray panels */
+            --border-color: #cbd5e1; /* Slate gray borders */
+            --text-dark: #0f172a; /* Slate black text */
+            
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-gold: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            
+            --glow-green: 0 0 10px rgba(16, 185, 129, 0.2);
+            --glow-blue: 0 0 10px rgba(59, 130, 246, 0.2);
+            --glow-gold: 0 0 10px rgba(245, 158, 11, 0.2);
+            --glow-purple: 0 0 10px rgba(139, 92, 246, 0.2);
+            --glow-red: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
+
+        body.night-shift {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --border-color: #334155;
+            --text-dark: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Sidebar - Silver Gray */
+        .sidebar {
+            width: 280px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 10;
+            flex-shrink: 0;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-text-header {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--text-dark);
+            letter-spacing: 1px;
+        }
+
+        .logo-text-header span {
+            color: #2563eb;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: #4b5563;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .sidebar-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #4b5563;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        body.night-shift .sidebar-title {
+            color: #94a3b8;
+        }
+
+        .history-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .history-item {
+            background-color: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #374151;
+        }
+
+        body.night-shift .history-item {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+
+        .history-item:hover {
+            border-color: #3b82f6;
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+
+        body.night-shift .history-item:hover {
+            background-color: #334155;
+            color: #fff;
+        }
+
+        .history-item.active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        body.night-shift .history-item.active {
+            background-color: #1e3a8a;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+
+        /* Music Widget */
+        .music-widget {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn-music {
+            background-color: #f3f4f6;
+            border: 1px solid #cbd5e1;
+            color: #1f2937;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        body.night-shift .btn-music {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+
+        .btn-music:hover {
+            background-color: #e5e7eb;
+        }
+
+        body.night-shift .btn-music:hover {
+            background-color: #334155;
+        }
+
+        /* Middle Column (Map + Console Logs) */
+        .middle-column {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border-right: 1px solid var(--border-color);
+        }
+
+        /* Top Bar inside middle column */
+        .top-bar {
+            height: 60px;
+            background-color: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            z-index: 5;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .top-bar h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 0.5px;
+        }
+
+        .btn-run {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .btn-run:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-run:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            color: #94a3b8;
+        }
+
+        /* Centered Floor Map Wrapper - Padding creates the wall container gutter */
+        .floor-map-wrapper {
+            display: flex;
+            background-color: var(--bg-color);
+            height: 55%;
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 20px; /* Restores spacing around outer wall */
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0; /* Prevents map from shrinking when logs fill terminal */
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        /* WIDESCREEN SLATE FLOOR WITH AN ALL-AROUND WALL BORDER */
+        .floor-map {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: #4b5563; /* Slate gray base floor */
+            background-image: 
+                linear-gradient(#374151 1px, transparent 1px),
+                linear-gradient(90deg, #374151 1px, transparent 1px);
+            background-size: 24px 24px;
+            border: 6px solid #374151; /* THE WALL: Solid concrete walls surrounding map */
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: crosshair;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        body.night-shift .floor-map {
+            background-color: #1e293b; /* Dark slate floor */
+            border-color: #0f172a;
+            background-image: 
+                linear-gradient(#0f172a 1px, transparent 1px),
+                linear-gradient(90deg, #0f172a 1px, transparent 1px);
+        }
+
+        /* Cobblestone paths */
+        .stone-path {
+            position: absolute;
+            background-color: #94a3b8;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        /* Desks rooms */
+        .office-room {
+            position: absolute;
+            background-color: rgba(15, 23, 42, 0.95);
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 3;
+            transition: all 0.3s ease;
+        }
+
+        .office-room.active-scout { border-color: var(--accent-green); box-shadow: var(--glow-green); }
+        .office-room.active-watcher { border-color: var(--accent-red); box-shadow: var(--glow-red); }
+        .office-room.active-flows { border-color: var(--accent-blue); box-shadow: var(--glow-blue); }
+        .office-room.active-advisor { border-color: var(--accent-purple); box-shadow: var(--glow-purple); }
+        .office-room.active-cio { border-color: var(--accent-gold); box-shadow: var(--glow-gold); }
+
+        /* Widescreen percentage placements to balance elements */
+        .room-scout { top: 15px; left: 6%; width: 140px; height: 110px; }
+        .room-watcher { bottom: 15px; left: 6%; width: 140px; height: 110px; }
+        .room-flows { top: 15px; right: 6%; width: 140px; height: 110px; }
+        .room-advisor { bottom: 15px; right: 6%; width: 140px; height: 110px; }
+        .room-cio { top: calc(50% - 55px); left: calc(50% - 70px); width: 140px; height: 110px; }
+
+        .room-title {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 4px;
+            margin-bottom: 4px;
+        }
+
+        .office-room.active-scout .room-title { color: var(--accent-green); }
+        .office-room.active-watcher .room-title { color: var(--accent-red); }
+        .office-room.active-flows .room-title { color: var(--accent-blue); }
+        .office-room.active-advisor .room-title { color: var(--accent-purple); }
+        .office-room.active-cio .room-title { color: var(--accent-gold); }
+
+        .desk-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+        }
+
+        /* Modern Corporate Desks */
+        .office-desk {
+            width: 48px;
+            height: 24px;
+            background-color: #cbd5e1;
+            border: 2px solid #94a3b8;
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            cursor: pointer;
+        }
+
+        body.night-shift .office-desk::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%);
+            top: -38px;
+            left: -26px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .director-desk {
+            width: 65px;
+            height: 28px;
+            background-color: #94a3b8;
+            border: 2px solid var(--accent-blue);
+        }
+
+        body.night-shift .director-desk::after {
+            width: 120px;
+            height: 120px;
+            top: -45px;
+            left: -28px;
+        }
+
+        /* Glowing Crystal monitor balls */
+        .pc-monitor {
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%);
+            border: 1px solid #fff;
+            border-radius: 50%;
+            position: absolute;
+            top: -10px;
+            left: calc(50% - 7px);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
+
+        .pc-screen-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+        }
+
+        .office-room.active-scout .pc-monitor { background: radial-gradient(circle, #4ade80 0%, #16a34a 100%); box-shadow: 0 0 10px var(--accent-green); }
+        .office-room.active-watcher .pc-monitor { background: radial-gradient(circle, #f87171 0%, #dc2626 100%); box-shadow: 0 0 10px var(--accent-red); }
+        .office-room.active-flows .pc-monitor { background: radial-gradient(circle, #60a5fa 0%, #2563eb 100%); box-shadow: 0 0 10px var(--accent-blue); }
+        .office-room.active-advisor .pc-monitor { background: radial-gradient(circle, #c084fc 0%, #9333ea 100%); box-shadow: 0 0 10px var(--accent-purple); }
+        .office-room.active-cio .pc-monitor { background: radial-gradient(circle, #fbbf24 0%, #d97706 100%); box-shadow: 0 0 10px var(--accent-gold); }
+
+        /* Graal RPG character design */
+        .pixel-avatar {
+            position: relative;
+            width: 24px;
+            height: 34px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s ease;
+        }
+
+        .avatar-hair {
+            width: 16px;
+            height: 8px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .avatar-head {
+            width: 12px;
+            height: 10px;
+            background-color: #ffd8a8;
+            border-radius: 50%;
+            margin-top: -1px;
+            position: relative;
+            border: 1px solid #4a2c11;
+        }
+
+        /* Directional facing look indicator */
+        .facing-right .avatar-head::before {
+            content: '';
+            position: absolute;
+            right: 2px;
+            top: 2px;
+            width: 2px;
+            height: 2px;
+            background-color: #000;
+            box-shadow: -3px 0 #000;
+        }
+        .facing-left .avatar-head::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            width: 2px;
+            height: 2px;
+            background-color: #000;
+            box-shadow: 3px 0 #000;
+        }
+
+        .avatar-body {
+            width: 18px;
+            height: 14px;
+            border-radius: 3px 3px 0 0;
+            margin-top: 1px;
+            border: 1px solid #4a2c11;
+        }
+
+        .avatar-legs {
+            display: flex;
+            gap: 2px;
+            margin-top: -1px;
+        }
+
+        .avatar-leg {
+            width: 5px;
+            height: 7px;
+            background-color: #1e1b4b;
+            transform-origin: top center;
+        }
+
+        /* Colors */
+        .scout-body { background-color: var(--accent-green); }
+        .scout-hair { background-color: #f97316; }
+        .watcher-body { background-color: var(--accent-red); }
+        .watcher-hair { background-color: #7c2d12; }
+        .flows-body { background-color: var(--accent-blue); }
+        .flows-hair { background-color: #1e3a8a; }
+        .advisor-body { background-color: var(--accent-purple); }
+        .advisor-hair { background-color: #94a3b8; }
+        .cio-body { background-color: var(--accent-gold); }
+        .cio-hair { background-color: #0f172a; }
+
+        /* Bouncing head nod sitting */
+        .sitting .avatar-head {
+            animation: graal-nod 1.2s infinite alternate ease-in-out;
+        }
+
+        @keyframes graal-nod {
+            from { transform: translateY(0); }
+            to { transform: translateY(1.5px); }
+        }
+
+        /* Typing hands working */
+        .typing-hands {
+            display: none;
+            position: absolute;
+            bottom: 3px;
+            width: 12px;
+            height: 4px;
+        }
+        .typing-hands::before, .typing-hands::after {
+            content: '';
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: #ffd8a8;
+            border-radius: 50%;
+        }
+        .typing-hands::before { left: 0; animation: graal-type 0.2s infinite alternate; }
+        .typing-hands::after { right: 0; animation: graal-type 0.2s infinite alternate-reverse; }
+
+        .office-room.active-scout #hands-scout,
+        .office-room.active-watcher #hands-watcher,
+        .office-room.active-flows #hands-flows,
+        .office-room.active-advisor #hands-advisor,
+        .office-room.active-cio #hands-cio {
+            display: flex;
+        }
+
+        /* Spooked shake effect when clicked */
+        .spooked {
+            animation: graal-spook 0.4s ease-out;
+        }
+        @keyframes graal-spook {
+            0% { transform: scale(1.3) rotate(-8deg); }
+            50% { transform: scale(1.3) rotate(8deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+
+        /* Speech bubbles for interaction */
+        .speech-bubble {
+            position: absolute;
+            top: -24px;
+            background-color: #fff;
+            color: #000;
+            border: 1.5px solid #000;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            z-index: 100;
+            box-shadow: 2px 2px #000;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* Status bubble above desk */
+        .typing-indicator {
+            position: absolute;
+            top: -24px;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.6rem;
+            display: none;
+            z-index: 12;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            white-space: nowrap;
+        }
+
+        .office-room.active-scout #typing-scout,
+        .office-room.active-watcher #typing-watcher,
+        .office-room.active-flows #typing-flows,
+        .office-room.active-advisor #typing-advisor,
+        .office-room.active-cio #typing-cio {
+            display: block;
+            animation: graal-float 0.4s infinite alternate ease-in-out;
+        }
+
+        @keyframes graal-float {
+            from { transform: translateY(0); }
+            to { transform: translateY(-2px); }
+        }
+
+        /* CSS-Drawn Vector Gold Coin */
+        .floor-coin {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: radial-gradient(circle, #fcd34d 0%, #d97706 100%);
+            border: 1.5px solid #78350f;
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+            z-index: 5;
+            animation: spin-coin 1s infinite linear, bounce-in 0.2s ease-out;
+            cursor: pointer;
+            pointer-events: none;
+        }
+        @keyframes spin-coin {
+            0% { transform: scaleX(1); }
+            50% { transform: scaleX(0); }
+            100% { transform: scaleX(1); }
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        /* Walker sprites with swinging legs */
+        .agent-sprite {
+            position: absolute;
+            z-index: 10;
+            display: none;
+        }
+
+        .walking .left-leg { animation: graal-leg 0.2s infinite alternate linear; }
+        .walking .right-leg { animation: graal-leg 0.2s infinite alternate-reverse linear; }
+        .walking { animation: graal-bob 0.2s infinite alternate ease-in-out; }
+
+        @keyframes graal-leg {
+            from { transform: rotate(-30deg); }
+            to { transform: rotate(30deg); }
+        }
+        @keyframes graal-bob {
+            from { transform: translateY(0); }
+            to { transform: translateY(-3px); }
+        }
+
+        /* Quest scroll folder delivery */
+        .data-folder {
+            position: absolute;
+            font-size: 1.1rem;
+            display: none;
+            z-index: 15;
+            filter: drop-shadow(0 0 5px var(--accent-gold));
+            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Deco props in corners */
+        .floor-prop {
+            font-size: 1.1rem;
+            position: absolute;
+            z-index: 2;
+        }
+
+        /* meeting room furniture, water cooler, server cabinets */
+        .furniture-props {
+            background-color: #cbd5e1;
+            border: 2px solid #94a3b8;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Glare overlay for Wall TV screen */
+        .wall-tv-screen::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%);
+            pointer-events: none;
+            border-radius: 3px;
+        }
+
+        /* GRAY TERMINAL REDESIGN - Stretches full width at bottom of center column */
+        .terminal-panel {
+            height: 45%; 
+            display: flex;
+            flex-direction: column;
+            background-color: #cbd5e1; 
+            min-height: 0; /* CRITICAL: Allow container to scroll instead of pushing other components out */
+            transition: background-color 0.4s ease;
+        }
+
+        body.night-shift .terminal-panel {
+            background-color: #1e293b;
+        }
+
+        .terminal-panel .panel-header {
+            height: 38px;
+            border-bottom: 1px solid #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1e293b;
+            background-color: #94a3b8;
+            font-weight: 700;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        body.night-shift .terminal-panel .panel-header,
+        body.night-shift .report-panel .panel-header {
+            background-color: #334155;
+            color: #cbd5e1;
+            border-bottom-color: #1e293b;
+        }
+
+        .terminal-body {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: #0f172a;
+            background-color: #cbd5e1;
+            white-space: pre-wrap;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        body.night-shift .terminal-body {
+            background-color: #1e293b;
+            color: #f1f5f9;
+        }
+
+        /* Right Column (Decision Board Panel stretched full vertical height) */
+        .right-column {
+            width: 450px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #cbd5e1;
+            border-left: 1px solid var(--border-color);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        body.night-shift .right-column {
+            background-color: #1e293b;
+        }
+
+        .report-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: #cbd5e1;
+            transition: background-color 0.4s ease;
+        }
+
+        body.night-shift .report-panel {
+            background-color: #1e293b;
+        }
+
+        .report-panel .panel-header {
+            height: 60px;
+            border-bottom: 1px solid #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1e293b;
+            background-color: #94a3b8;
+            font-weight: 700;
+        }
+
+        /* Vertical stacked reports body */
+        .report-body {
+            flex-grow: 1;
+            padding: 15px;
+            overflow: hidden; /* Hide outer scrollbar */
+            display: flex;
+            flex-direction: column;
+            background-color: #e5e7eb;
+            transition: background-color 0.4s ease;
+        }
+
+        body.night-shift .report-body {
+            background-color: #0f172a;
+        }
+
+        .report-column {
+            width: 100%;
+            height: 100%; /* Fill entire vertical height */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #f3f4f6;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 15px;
+            overflow: hidden; /* Contain scroll content */
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        body.night-shift .report-column {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+
+        .column-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #4b5563;
+            font-weight: 700;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 6px;
+            margin-bottom: 8px;
+            flex-shrink: 0; /* Keep title from shrinking */
+        }
+
+        body.night-shift .column-title {
+            color: #cbd5e1;
+            border-bottom-color: #334155;
+        }
+
+        /* Beautiful parsed Markdown Styles inside decision board */
+        .column-content {
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: #1e293b;
+            overflow-y: auto; /* Enable internal scrolling on the text content */
+            flex-grow: 1; /* Stretch to fill remainder of card */
+            transition: color 0.4s ease;
+        }
+
+        body.night-shift .column-content {
+            color: #f1f5f9;
+        }
+
+        .column-content h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #b45309;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 4px;
+        }
+        body.night-shift .column-content h1 {
+            color: #f59e0b;
+            border-bottom-color: #334155;
+        }
+
+        .column-content h2 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+        body.night-shift .column-content h2 {
+            color: #3b82f6;
+        }
+
+        .column-content h3 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+        body.night-shift .column-content h3 {
+            color: #cbd5e1;
+        }
+
+        .column-content p {
+            margin-bottom: 8px;
+        }
+
+        .column-content ul, .column-content ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .column-content li {
+            margin-bottom: 4px;
+        }
+
+        .column-content code {
+            font-family: 'Fira Code', monospace;
+            background-color: rgba(0,0,0,0.05);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        body.night-shift .column-content code {
+            background-color: rgba(255,255,255,0.08);
+        }
+
+        .column-content pre {
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 10px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 10px;
+        }
+        .column-content pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .column-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .column-content th, .column-content td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        body.night-shift .column-content th, 
+        body.night-shift .column-content td {
+            border-color: #334155;
+        }
+
+        .column-content th {
+            background-color: #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        body.night-shift .column-content th {
+            background-color: #334155;
+            color: #fff;
+        }
+        
+        .column-content tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        body.night-shift .column-content tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar archive list -->
+    <div class="sidebar">
+        <div class="logo-container">
+            <div class="logo-text-header">FINHUB<span>KH</span></div>
+            <div class="logo-subtitle">Quantum Research Hub</div>
+        </div>
+        <h3 class="sidebar-title">Research Archive</h3>
+        <div class="history-list" id="historyList">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Music player Widget -->
+        <div class="music-widget">
+            <h3 class="sidebar-title" style="margin-top: 10px;">Desk Radio</h3>
+            
+            <!-- Default Play / Stop control -->
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                <button id="btnMusic" class="btn-music">▶ PLAY</button>
+                <input type="range" id="volSlider" min="0" max="1" step="0.1" value="0.4" style="width: 70px; cursor: pointer;">
+            </div>
+
+            <!-- YouTube Video Embed Option -->
+            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #475569; font-weight: 700;">Custom YouTube Stream:</span>
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="ytUrlInput" placeholder="Paste YouTube link..." style="flex-grow: 1; padding: 4px 6px; border-radius: 4px; border: 1px solid #94a3b8; font-size: 0.7rem; background-color: #f3f4f6; color: #000; font-family: inherit;">
+                    <button id="btnLoadYt" class="btn-music" style="padding: 4px 8px;">Load</button>
+                </div>
+            </div>
+
+            <!-- ENLARGED Youtube frame container + API Target div -->
+            <div id="ytPlayerContainer" style="margin-top: 10px; display: none; height: 140px; width: 100%; overflow: hidden; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #000;">
+                <div id="ytPlayer"></div>
+            </div>
+
+            <div id="radioStatus" style="font-size: 0.6rem; color: #475569; font-family: 'Fira Code', monospace; margin-top: 6px;">Radio Standby</div>
+        </div>
+    </div>
+
+    <!-- Middle Column: Floor Map + Core Console Logs -->
+    <div class="middle-column">
+        <!-- Top navigation controls -->
+        <div class="top-bar">
+            <div>
+                <h2>FINHUBKH INTEGRATED CORES</h2>
+                <span id="currentStatus" style="font-size: 0.7rem; color: #475569; font-family: 'Fira Code', monospace;">STATUS: CORES_STANDBY</span>
+            </div>
+            <div style="display: flex; align-items: center;">
+                <button class="btn-music" id="btnThemeToggle" style="margin-right: 15px;">🌙 NIGHT SHIFT</button>
+                <button class="btn-run" id="btnRun">RUN CORE PROCESS</button>
+            </div>
+        </div>
+
+        <!-- Interactive Directives Command Center -->
+        <div style="display: flex; gap: 10px; background-color: var(--panel-bg); border-bottom: 1px solid var(--border-color); padding: 8px 20px; transition: background-color 0.4s ease, border-color 0.4s ease;">
+            <span style="font-size: 0.7rem; color: #475569; align-self: center; font-weight: 700; text-transform: uppercase;">Directives:</span>
+            <button class="btn-music" id="btnCoffee" style="padding: 4px 10px; font-size: 0.65rem;">☕ COFFEE BREAK</button>
+            <button class="btn-music" id="btnBonus" style="padding: 4px 10px; font-size: 0.65rem;">🪙 SHOWER BONUS</button>
+            <button class="btn-music" id="btnPanic" style="padding: 4px 10px; font-size: 0.65rem; background-color: #fee2e2; border-color: #fca5a5; color: #b91c1c;">⚠️ PANIC ALERT</button>
+        </div>
+
+        <!-- Widescreen Floor Map Wrapper (Padding creates the walls) -->
+        <div class="floor-map-wrapper">
+            <!-- Full Height/Width Widescreen map with thick walls -->
+            <div class="floor-map" id="floorMap" title="Click anywhere to drop gold coins for agents!">
+                <!-- Paths formatted to stretch across 100% width -->
+                <div class="stone-path" style="top: 15px; left: calc(6% + 65px); width: 10px; bottom: 15px;"></div>
+                <div class="stone-path" style="top: 15px; right: calc(6% + 65px); width: 10px; bottom: 15px;"></div>
+                <div class="stone-path" style="left: calc(6% + 140px); width: calc(44% - 65px); top: 65px; height: 10px;"></div>
+                <div class="stone-path" style="right: calc(6% + 140px); width: calc(44% - 65px); top: 65px; height: 10px;"></div>
+                <div class="stone-path" style="left: calc(6% + 140px); width: calc(44% - 65px); bottom: 65px; height: 10px;"></div>
+                <div class="stone-path" style="right: calc(6% + 140px); width: calc(44% - 65px); bottom: 65px; height: 10px;"></div>
+
+                <!-- Scroll delivery sprite -->
+                <div class="data-folder" id="movingFolder">📜</div>
+
+                <!-- TRADING FLOOR WALL TV BOARD (Only displays Gold prices & retro gold graph) -->
+                <div class="wall-tv-screen" style="position: absolute; left: calc(50% - 105px); top: 12px; width: 210px; height: 80px; background-color: #0c1524; border: 3px solid #475569; border-radius: 6px; box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.9); z-index: 2; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; font-family: 'Fira Code', monospace; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #fbbf24; border-bottom: 1.5px solid rgba(251,191,36,0.25); padding-bottom: 2px;">
+                        <span>🟡 GOLD TICKER</span>
+                        <span id="tickerGold" style="font-weight: 700; text-shadow: 0 0 5px rgba(251,191,36,0.65);">$4,003.10</span>
+                    </div>
+                    <!-- SVG Sparkline inside TV -->
+                    <svg id="sparklineSvg" width="100%" height="45" style="background-color: #020617; border-radius: 4px; overflow: visible;">
+                        <polyline id="sparklineGold" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
+                    </svg>
+                </div>
+
+                <!-- Central Conference Meeting Table (No overlaps) -->
+                <div class="meeting-room-group" style="position: absolute; left: 26%; top: calc(50% - 40px); width: 90px; height: 80px; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                    <div style="font-size: 1.1rem; line-height: 1;" title="Chairs">🪑 &nbsp; 🪑</div>
+                    <div class="furniture-props" style="width: 85px; height: 22px; font-size: 0.6rem; color: #475569; font-weight: 700; transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;">Meeting Table</div>
+                    <div style="font-size: 1.1rem; line-height: 1;" title="Chairs">🪑 &nbsp; 🪑</div>
+                </div>
+
+                <!-- High-tech Server cage (No overlaps) -->
+                <div class="server-room-group" style="position: absolute; right: 26%; top: calc(50% - 20px); width: 60px; height: 40px; z-index: 2;">
+                    <div class="furniture-props" style="width: 100%; height: 100%; background-color: #475569; border-color: #1e293b; color: #10b981; font-family: monospace; font-size: 0.5rem; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                        <span>SERVER</span>
+                        <span style="animation: graal-type 0.3s infinite alternate;">● ●</span>
+                    </div>
+                </div>
+
+                <!-- Room 1: Macro Scout -->
+                <div class="office-room room-scout" id="room-scout">
+                    <div class="room-title">Scout Core</div>
+                    <div class="desk-area">
+                        <div class="office-desk" onclick="spookAgent('scout', ['?!', 'Searching...', 'Busy!'])">
+                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                            <div class="pixel-avatar sitting facing-right" id="avatar-scout">
+                                <div class="avatar-hair scout-hair"></div>
+                                <div class="avatar-head"></div>
+                                <div class="avatar-body scout-body"></div>
+                                <div class="avatar-legs"></div>
+                                <div class="typing-hands" id="hands-scout"></div>
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typing-scout">Scouting...</div>
+                    </div>
+                </div>
+
+                <!-- Room 2: Price Watcher -->
+                <div class="office-room room-watcher" id="room-watcher">
+                    <div class="room-title">Watcher Core</div>
+                    <div class="desk-area">
+                        <div class="office-desk" onclick="spookAgent('watcher', ['Watching!', 'Prices moving...', 'DXY high!'])">
+                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                            <div class="pixel-avatar sitting facing-right" id="avatar-watcher">
+                                <div class="avatar-hair watcher-hair"></div>
+                                <div class="avatar-head"></div>
+                                <div class="avatar-body watcher-body"></div>
+                                <div class="avatar-legs"></div>
+                                <div class="typing-hands" id="hands-watcher"></div>
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typing-watcher">Watching...</div>
+                    </div>
+                </div>
+
+                <!-- Room 3: Flow Tracer -->
+                <div class="office-room room-flows" id="room-flows">
+                    <div class="room-title">Flow Tracer</div>
+                    <div class="desk-area">
+                        <div class="office-desk" onclick="spookAgent('flows', ['Tracing!', 'Huge flows!', 'COT data!'])">
+                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                            <div class="pixel-avatar sitting facing-left" id="avatar-flows">
+                                <div class="avatar-hair flows-hair"></div>
+                                <div class="avatar-head"></div>
+                                <div class="avatar-body flows-body"></div>
+                                <div class="avatar-legs"></div>
+                                <div class="typing-hands" id="hands-flows"></div>
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typing-flows">Tracing...</div>
+                    </div>
+                </div>
+
+                <!-- Room 4: Global Advisor -->
+                <div class="office-room room-advisor" id="room-advisor">
+                    <div class="room-title">Advisor Core</div>
+                    <div class="desk-area">
+                        <div class="office-desk" onclick="spookAgent('advisor', ['Advising...', 'Risk off!', 'Macro trend!'])">
+                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                            <div class="pixel-avatar sitting facing-left" id="avatar-advisor">
+                                <div class="avatar-hair advisor-hair"></div>
+                                <div class="avatar-head"></div>
+                                <div class="avatar-body advisor-body"></div>
+                                <div class="avatar-legs"></div>
+                                <div class="typing-hands" id="hands-advisor"></div>
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typing-advisor">Advising...</div>
+                    </div>
+                </div>
+
+                <!-- Room 5: Director Executive Office -->
+                <div class="office-room room-cio" id="room-cio">
+                    <div class="room-title">Director Office</div>
+                    <div class="desk-area">
+                        <div class="office-desk director-desk" onclick="spookAgent('cio', ['Deciding...', 'Trade execution!'])">
+                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                            <div class="pixel-avatar sitting" id="avatar-cio">
+                                <div class="avatar-hair cio-hair"></div>
+                                <div class="avatar-head"></div>
+                                <div class="avatar-body cio-body"></div>
+                                <div class="avatar-legs"></div>
+                                <div class="typing-hands" id="hands-cio"></div>
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typing-cio">Synthesizing...</div>
+                    </div>
+                </div>
+
+                <!-- Walking human agents with fully swinging legs -->
+                <div class="agent-sprite" id="sprite-walker-scout">
+                    <div class="pixel-avatar walking">
+                        <div class="avatar-hair scout-hair"></div>
+                        <div class="avatar-head"></div>
+                        <div class="avatar-body scout-body"></div>
+                        <div class="avatar-legs">
+                            <div class="avatar-leg left-leg"></div>
+                            <div class="avatar-leg right-leg"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="agent-sprite" id="sprite-walker-watcher">
+                    <div class="pixel-avatar walking">
+                        <div class="avatar-hair watcher-hair"></div>
+                        <div class="avatar-head"></div>
+                        <div class="avatar-body watcher-body"></div>
+                        <div class="avatar-legs">
+                            <div class="avatar-leg left-leg"></div>
+                            <div class="avatar-leg right-leg"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="agent-sprite" id="sprite-walker-flows">
+                    <div class="pixel-avatar walking">
+                        <div class="avatar-hair flows-hair"></div>
+                        <div class="avatar-head"></div>
+                        <div class="avatar-body flows-body"></div>
+                        <div class="avatar-legs">
+                            <div class="avatar-leg left-leg"></div>
+                            <div class="avatar-leg right-leg"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="agent-sprite" id="sprite-walker-advisor">
+                    <div class="pixel-avatar walking">
+                        <div class="avatar-hair advisor-hair"></div>
+                        <div class="avatar-head"></div>
+                        <div class="avatar-body advisor-body"></div>
+                        <div class="avatar-legs">
+                            <div class="avatar-leg left-leg"></div>
+                            <div class="avatar-leg right-leg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs console (Stretches full width of middle column bottom) -->
+        <div class="terminal-panel">
+            <div class="panel-header">
+                <span>FINHUBKH Core Console Logs</span>
+                <span style="color: #15803d; font-size: 0.55rem;">● ONLINE</span>
+            </div>
+            <div class="terminal-body" id="terminalOutput">Console standby. Run core process to mobilize agents...</div>
+        </div>
+    </div>
+
+    <!-- Right Column: Decision Board (Stretched full height) -->
+    <div class="right-column">
+        <div class="report-panel">
+            <div class="panel-header">
+                <span>FINHUBKH Executive Decision Board</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="activeReportName" style="color: #c2410c;">NO_ACTIVE_RECORD</span>
+                    <button class="btn-music" id="btnDownloadMd" style="padding: 3px 8px; font-size: 0.6rem; display: none;">📥 DOWNLOAD</button>
+                </div>
+            </div>
+            <div class="report-body">
+                <div class="report-column">
+                    <div class="column-title">Portfolio Analysis Report</div>
+                    <div class="column-content" id="reportEnglish">No report loaded. Double click a record on the left to read.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Radio Audio Element -->
+    <audio id="bgRadio" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
+
+    <!-- Load marked.js for premium markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Load the YouTube Iframe Player API asynchronously -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        const btnRun = document.getElementById('btnRun');
+        const terminalOutput = document.getElementById('terminalOutput');
+        const historyList = document.getElementById('historyList');
+        const activeReportName = document.getElementById('activeReportName');
+        const reportEnglish = document.getElementById('reportEnglish');
+        const currentStatus = document.getElementById('currentStatus');
+        const floorMap = document.getElementById('floorMap');
+        const movingFolder = document.getElementById('movingFolder');
+        
+        // Download controls
+        const btnDownloadMd = document.getElementById('btnDownloadMd');
+        let activeReportContent = "";
+        let activeReportFilename = "";
+
+        // Audio controls
+        const bgRadio = document.getElementById('bgRadio');
+        const btnMusic = document.getElementById('btnMusic');
+        const volSlider = document.getElementById('volSlider');
+        const radioStatus = document.getElementById('radioStatus');
+
+        // Custom YouTube Stream
+        const btnLoadYt = document.getElementById('btnLoadYt');
+        const ytUrlInput = document.getElementById('ytUrlInput');
+        const ytPlayerContainer = document.getElementById('ytPlayerContainer');
+
+        let ytPlayer = null;
+        let isYoutubeActive = false;
+
+        // RETRO WEB AUDIO API SYNTH (Soundeffects generator)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playCoinSound() {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.type = 'sine';
+                const now = audioCtx.currentTime;
+                osc.frequency.setValueAtTime(880, now); // A5 note
+                osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6 note
+                
+                gain.gain.setValueAtTime(volSlider.value * 0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } catch(e) { console.error(e); }
+        }
+
+        // Realistic mechanical keyboard keystroke synthesizer (noise-decay clack + thud)
+        function playClickSound() {
+            return; // Disabled completely for now
+            try {
+                const bufferSize = audioCtx.sampleRate * 0.05; // 50ms buffer
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                // Fill buffer with white noise for the clack
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                
+                const noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                
+                // Bandpass filter to mimic key switch casing resonance
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                // Add slight random pitch variation per keystroke for natural feel
+                filter.frequency.setValueAtTime(1000 + Math.random() * 400, audioCtx.currentTime);
+                filter.Q.setValueAtTime(2.2, audioCtx.currentTime);
+                
+                const gain = audioCtx.createGain();
+                const now = audioCtx.currentTime;
+                gain.gain.setValueAtTime(volSlider.value * 0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                
+                noiseNode.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                // Low frequency thud oscillator representing key bottoming out
+                const osc = audioCtx.createOscillator();
+                const oscGain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(120, now);
+                oscGain.gain.setValueAtTime(volSlider.value * 0.05, now);
+                oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+                
+                osc.connect(oscGain);
+                oscGain.connect(audioCtx.destination);
+                
+                noiseNode.start(now);
+                osc.start(now);
+                
+                noiseNode.stop(now + 0.05);
+                osc.stop(now + 0.05);
+            } catch(e) { console.error(e); }
+        }
+
+        // Night Shift Theme toggle
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        btnThemeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('night-shift');
+            if (document.body.classList.contains('night-shift')) {
+                btnThemeToggle.textContent = "☀️ DAY SHIFT";
+            } else {
+                btnThemeToggle.textContent = "🌙 NIGHT SHIFT";
+            }
+        });
+
+        // DYNAMIC WALL TV GRAPH (Only tracks Gold prices)
+        let goldHistory = Array.from({length: 22}, () => 4000 + Math.random() * 15);
+
+        function drawSparkline() {
+            const width = 198; // inner TV width
+            const height = 45;
+            
+            // Draw gold line
+            const gMin = Math.min(...goldHistory);
+            const gMax = Math.max(...goldHistory);
+            const gRange = (gMax - gMin) || 1;
+            const gPoints = goldHistory.map((val, idx) => {
+                const x = (idx / (goldHistory.length - 1)) * 188 + 5;
+                const y = height - ((val - gMin) / gRange) * (height - 15) - 5;
+                return `${x},${y}`;
+            }).join(' ');
+            document.getElementById('sparklineGold').setAttribute('points', gPoints);
+        }
+
+        // Simulated real-time price tick loop
+        setInterval(() => {
+            const lastGold = goldHistory[goldHistory.length - 1];
+            const newGold = lastGold + (Math.random() - 0.5) * 4;
+            goldHistory.push(newGold);
+            goldHistory.shift();
+            document.getElementById('tickerGold').textContent = `$${newGold.toFixed(2)}`;
+
+            drawSparkline();
+        }, 2000);
+
+        drawSparkline();
+
+        // COMMAND CENTER DIRECTIVES BUTTONS
+        let isCoffeeBreak = false;
+        
+        // Coffee break Directive
+        document.getElementById('btnCoffee').addEventListener('click', () => {
+            if (isCoffeeBreak) return;
+            isCoffeeBreak = true;
+            
+            const cores = ['scout', 'watcher', 'flows', 'advisor'];
+            cores.forEach(c => {
+                document.getElementById(`avatar-${c}`).style.opacity = '0.2';
+                const walker = document.getElementById(`sprite-walker-${c}`);
+                const walkerAvatar = walker.querySelector('.pixel-avatar');
+                
+                // Destination Meeting table room coordinates
+                const mapRect = floorMap.getBoundingClientRect();
+                const targetX = mapRect.width * 0.26 + (c === 'scout' || c === 'watcher' ? 5 : 45);
+                const targetY = mapRect.height * 0.45 + (c === 'scout' || c === 'flows' ? 5 : 30);
+                
+                // Start coords (desk)
+                const src = document.getElementById(`room-${c}`).getBoundingClientRect();
+                const startX = src.left - mapRect.left + src.width / 2 - 12;
+                const startY = src.top - mapRect.top + src.height / 2 - 17;
+
+                walker.style.transition = 'none';
+                walker.style.left = `${startX}px`;
+                walker.style.top = `${startY}px`;
+                walker.style.display = 'block';
+
+                // Walk to conference table
+                setTimeout(() => {
+                    walker.style.transition = 'left 1.5s linear, top 1.5s linear';
+                    walker.style.left = `${targetX}px`;
+                    walker.style.top = `${targetY}px`;
+                }, 50);
+
+                // Arrive: sip coffee
+                setTimeout(() => {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'speech-bubble';
+                    bubble.textContent = '☕ sips...';
+                    walker.appendChild(bubble);
+
+                    // Walk back
+                    setTimeout(() => {
+                        bubble.remove();
+                        walker.style.transition = 'left 1.5s linear, top 1.5s linear';
+                        walker.style.left = `${startX}px`;
+                        walker.style.top = `${startY}px`;
+
+                        setTimeout(() => {
+                            walker.style.display = 'none';
+                            document.getElementById(`avatar-${c}`).style.opacity = '1';
+                            isCoffeeBreak = false;
+                        }, 1600);
+                    }, 5000);
+                }, 1600);
+            });
+        });
+
+        // Shower Bonus coins Directive
+        document.getElementById('btnBonus').addEventListener('click', () => {
+            for (let i = 0; i < 8; i++) {
+                const coin = document.createElement('div');
+                coin.className = 'floor-coin';
+                const x = 50 + Math.random() * (floorMap.clientWidth - 100);
+                const y = 50 + Math.random() * (floorMap.clientHeight - 100);
+                coin.style.left = `${x}px`;
+                coin.style.top = `${y}px`;
+                floorMap.appendChild(coin);
+
+                setTimeout(() => {
+                    coin.style.transition = 'opacity 0.5s';
+                    coin.style.opacity = '0';
+                    setTimeout(() => coin.remove(), 500);
+                }, 6000);
+            }
+            playCoinSound();
+        });
+
+        // Panic Alert Directive
+        document.getElementById('btnPanic').addEventListener('click', () => {
+            const cores = ['scout', 'watcher', 'flows', 'advisor'];
+            cores.forEach(c => {
+                const avatar = document.getElementById(`avatar-${c}`);
+                avatar.classList.add('spooked');
+                
+                spookAgent(c, ['CRASH?!', 'Gold surging!', 'Sell DXY!', 'Risk off!']);
+                
+                const monitor = document.getElementById(`room-${c}`).querySelector('.pc-monitor');
+                monitor.style.animation = 'graal-spook 0.1s infinite alternate';
+                
+                setTimeout(() => {
+                    avatar.classList.remove('spooked');
+                    monitor.style.animation = '';
+                }, 4000);
+            });
+        });
+
+        // Callback triggered automatically when YouTube Player API is ready
+        function onYouTubeIframeAPIReady() {
+            // Player is initialized lazily upon click
+        }
+
+        // Parse video ID and launch player with API control
+        btnLoadYt.addEventListener('click', () => {
+            let url = ytUrlInput.value.trim();
+            if (!url) return;
+
+            let videoId = "";
+            if (url.includes("youtube.com/watch")) {
+                try {
+                    const urlObj = new URL(url);
+                    const urlParams = new URLSearchParams(urlObj.search);
+                    videoId = urlParams.get('v');
+                } catch(e) {
+                    console.error(e);
+                }
+            } else if (url.includes("youtu.be/")) {
+                videoId = url.split("youtu.be/")[1]?.split("?")[0];
+            } else if (url.includes("youtube.com/embed/")) {
+                videoId = url.split("youtube.com/embed/")[1]?.split("?")[0];
+            } else {
+                videoId = url; // assume direct video id
+            }
+
+            if (videoId) {
+                // Pause standard radio if running
+                if (!bgRadio.paused) {
+                    bgRadio.pause();
+                }
+
+                // Show player container
+                ytPlayerContainer.style.display = 'block';
+                isYoutubeActive = true;
+
+                if (ytPlayer) {
+                    ytPlayer.loadVideoById(videoId);
+                    ytPlayer.setVolume(volSlider.value * 100);
+                    btnMusic.textContent = "⏸ PAUSE";
+                    radioStatus.textContent = "Playing YouTube Stream";
+                } else {
+                    ytPlayer = new YT.Player('ytPlayer', {
+                        height: '140',
+                        width: '100%',
+                        videoId: videoId,
+                        playerVars: {
+                            'autoplay': 1,
+                            'loop': 1,
+                            'playlist': videoId,
+                            'controls': 1
+                        },
+                        events: {
+                            'onReady': (event) => {
+                                event.target.setVolume(volSlider.value * 100);
+                                btnMusic.textContent = "⏸ PAUSE";
+                                radioStatus.textContent = "Playing YouTube Stream";
+                            },
+                            'onStateChange': (event) => {
+                                if (event.data === YT.PlayerState.PLAYING) {
+                                    btnMusic.textContent = "⏸ PAUSE";
+                                    radioStatus.textContent = "Playing YouTube Stream";
+                                } else if (event.data === YT.PlayerState.PAUSED) {
+                                    btnMusic.textContent = "▶ PLAY";
+                                    radioStatus.textContent = "YouTube Paused";
+                                }
+                            }
+                        }
+                    });
+                }
+            } else {
+                radioStatus.textContent = "Invalid YouTube Link";
+            }
+        });
+
+        // Combined Desk Radio Play/Pause Trigger
+        btnMusic.addEventListener('click', () => {
+            if (isYoutubeActive && ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+                const state = ytPlayer.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                    ytPlayer.pauseVideo();
+                    btnMusic.textContent = "▶ PLAY";
+                    radioStatus.textContent = "YouTube Paused";
+                } else {
+                    ytPlayer.playVideo();
+                    btnMusic.textContent = "⏸ PAUSE";
+                    radioStatus.textContent = "Playing YouTube Stream";
+                }
+            } else {
+                // Control standard audio stream
+                if (bgRadio.paused) {
+                    bgRadio.play().then(() => {
+                        btnMusic.textContent = "⏸ PAUSE";
+                        radioStatus.textContent = "Playing: SoundHelix Synth";
+                    }).catch(err => {
+                        console.error("Audio block:", err);
+                        radioStatus.textContent = "Click again to load stream";
+                    });
+                } else {
+                    bgRadio.pause();
+                    btnMusic.textContent = "▶ PLAY";
+                    radioStatus.textContent = "Radio Standby";
+                }
+            }
+        });
+
+        // Combined volume controller
+        volSlider.addEventListener('input', (e) => {
+            const vol = e.target.value;
+            bgRadio.volume = vol;
+            if (isYoutubeActive && ytPlayer && typeof ytPlayer.setVolume === 'function') {
+                ytPlayer.setVolume(vol * 100);
+            }
+        });
+
+        // Click to drop gold coins on the floor map
+        floorMap.addEventListener('click', (e) => {
+            if (e.target !== floorMap && !e.target.classList.contains('stone-path')) return;
+            
+            const rect = floorMap.getBoundingClientRect();
+            const x = e.clientX - rect.left - 7; // offset center
+            const y = e.clientY - rect.top - 7;
+
+            const coin = document.createElement('div');
+            coin.className = 'floor-coin';
+            coin.style.left = `${x}px`;
+            coin.style.top = `${y}px`;
+            floorMap.appendChild(coin);
+
+            // Animate out after 5 seconds
+            setTimeout(() => {
+                coin.style.transition = 'opacity 0.5s';
+                coin.style.opacity = '0';
+                setTimeout(() => coin.remove(), 500);
+            }, 5000);
+        });
+
+        // Click to spook / pop speech bubbles above agents
+        function spookAgent(avatarId, phrases) {
+            const avatar = document.getElementById(`avatar-${avatarId}`);
+            if (!avatar) return;
+
+            avatar.classList.add('spooked');
+            setTimeout(() => avatar.classList.remove('spooked'), 400);
+
+            const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+            const existingBubble = avatar.parentElement.querySelector('.speech-bubble');
+            if (existingBubble) existingBubble.remove();
+
+            const bubble = document.createElement('div');
+            bubble.className = 'speech-bubble';
+            bubble.textContent = phrase;
+            avatar.parentElement.appendChild(bubble);
+
+            setTimeout(() => {
+                bubble.style.transition = 'opacity 0.3s';
+                bubble.style.opacity = '0';
+                setTimeout(() => bubble.remove(), 300);
+            }, 1500);
+        }
+
+        // Fetch reports history archive
+        async function fetchHistory() {
+            try {
+                const res = await fetch('/api/reports');
+                const reports = await res.json();
+                historyList.innerHTML = '';
+                reports.forEach((filename) => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.textContent = filename.replace('.md', '').toUpperCase();
+                    item.addEventListener('click', () => loadReport(filename, item));
+                    historyList.appendChild(item);
+                });
+            } catch (err) {
+                console.error("History load error:", err);
+            }
+        }
+
+        // Fetch and load report contents
+        async function loadReport(filename, element) {
+            document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            try {
+                const res = await fetch(`/api/reports/${filename}`);
+                const data = await res.json();
+                activeReportName.textContent = filename.toUpperCase();
+
+                // Store raw content for downloading
+                activeReportContent = data.content;
+                activeReportFilename = filename;
+                btnDownloadMd.style.display = 'inline-block';
+
+                // Strip out Khmer section if present
+                const rawContent = data.content.split("---KHMER_SECTION---")[0];
+                
+                // Configure marked to not add raw ids to avoid collisions
+                marked.setOptions({
+                    headerIds: false,
+                    mangle: false
+                });
+                
+                // Parse and render using marked.js
+                reportEnglish.innerHTML = marked.parse(rawContent);
+            } catch (err) {
+                console.error("Report fetch error:", err);
+            }
+        }
+
+        // Animate human walking leg movements and transitions at a constant pace
+        function animateDataTransfer(sourceRoomId, targetRoomId, walkerSpriteId, folderColor, callback) {
+            const mapRect = floorMap.getBoundingClientRect();
+            const src = document.getElementById(sourceRoomId).getBoundingClientRect();
+            const dst = document.getElementById(targetRoomId).getBoundingClientRect();
+            const walker = document.getElementById(walkerSpriteId);
+            const walkerAvatar = walker.querySelector('.pixel-avatar');
+
+            const sittingAvatar = document.getElementById(sourceRoomId).querySelector('.pixel-avatar');
+            if (sittingAvatar) sittingAvatar.style.opacity = '0.2';
+
+            const startX = src.left - mapRect.left + src.width / 2 - 12;
+            const startY = src.top - mapRect.top + src.height / 2 - 17;
+            const endX = dst.left - mapRect.left + dst.width / 2 - 12;
+            const endY = dst.top - mapRect.top + dst.height / 2 - 17;
+
+            // Orient the walker direction based on path movement
+            if (endX > startX) {
+                walkerAvatar.classList.remove('facing-left');
+                walkerAvatar.classList.add('facing-right');
+            } else {
+                walkerAvatar.classList.remove('facing-right');
+                walkerAvatar.classList.add('facing-left');
+            }
+
+            // Calculate constant velocity transition duration
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const distance = Math.hypot(dx, dy);
+            const speed = 100; // 100 pixels per second
+            const walkDuration = (distance / speed).toFixed(2); // In seconds
+
+            // Position and initialize walker
+            walker.style.transition = 'none';
+            walker.style.left = `${startX}px`;
+            walker.style.top = `${startY}px`;
+            walker.style.display = 'block';
+
+            // Walk to desk
+            setTimeout(() => {
+                walker.style.transition = `left ${walkDuration}s linear, top ${walkDuration}s linear`;
+                walker.style.left = `${endX}px`;
+                walker.style.top = `${endY}px`;
+            }, 50);
+
+            // Arrive: flash folder, check if they can pick up coins, and walk back
+            setTimeout(() => {
+                movingFolder.style.left = `${endX}px`;
+                movingFolder.style.top = `${endY - 20}px`;
+                movingFolder.style.display = 'block';
+                movingFolder.style.filter = `drop-shadow(0 0 8px ${folderColor})`;
+
+                // Collect any nearby gold coins
+                document.querySelectorAll('.floor-coin').forEach(coin => {
+                    const cx = parseFloat(coin.style.left);
+                    const cy = parseFloat(coin.style.top);
+                    const distanceToCoin = Math.hypot(cx - endX, cy - endY);
+                    if (distanceToCoin < 30) {
+                        coin.style.transition = 'transform 0.2s, opacity 0.2s';
+                        coin.style.transform = 'scale(0)';
+                        coin.style.opacity = '0';
+                        setTimeout(() => coin.remove(), 200);
+                        playCoinSound(); // Audio pick-up chime!
+                    }
+                });
+
+                setTimeout(() => {
+                    movingFolder.style.display = 'none';
+                    // Walk back: flip direction
+                    if (startX > endX) {
+                        walkerAvatar.classList.remove('facing-left');
+                        walkerAvatar.classList.add('facing-right');
+                    } else {
+                        walkerAvatar.classList.remove('facing-right');
+                        walkerAvatar.classList.add('facing-left');
+                    }
+                    walker.style.transition = `left ${walkDuration}s linear, top ${walkDuration}s linear`;
+                    walker.style.left = `${startX}px`;
+                    walker.style.top = `${startY}px`;
+
+                    setTimeout(() => {
+                        walker.style.display = 'none';
+                        if (sittingAvatar) sittingAvatar.style.opacity = '1';
+                        if (callback) callback();
+                    }, parseFloat(walkDuration) * 1000 + 100);
+                }, 800);
+            }, parseFloat(walkDuration) * 1000 + 100);
+        }
+
+        function setHighlightRoom(roomId, activeClass) {
+            document.querySelectorAll('.office-room').forEach(r => {
+                r.className = r.className.split(' ').filter(c => !c.startsWith('active-')).join(' ');
+            });
+            if (roomId && activeClass) {
+                document.getElementById(roomId).classList.add(activeClass);
+            }
+        }
+
+        // Run process
+        btnRun.addEventListener('click', async () => {
+            btnRun.disabled = true;
+            terminalOutput.textContent = "Deploying FINHUBKH core analysis nodes...\n";
+            currentStatus.textContent = "STATUS: CORES_ACTIVE";
+            setHighlightRoom('room-scout', 'active-scout');
+            currentActiveRoom = 'room-scout';
+            playClickSound();
+
+            try {
+                const res = await fetch('/api/run', { method: 'POST' });
+                const startData = await res.json();
+
+                if (startData.status === 'started') {
+                    const eventSource = new EventSource('/api/logs');
+                    
+                    eventSource.onmessage = (event) => {
+                        const data = event.data;
+                        
+                        if (data === "---PROCESS_FINISHED---") {
+                            eventSource.close();
+                            btnRun.disabled = false;
+                            currentStatus.textContent = "STATUS: CORES_STANDBY";
+                            setHighlightRoom(null, null);
+                            fetchHistory();
+                            return;
+                        }
+
+                        terminalOutput.textContent += data + "\n";
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                        playClickSound(); // mechanical keystroke tick-tack sound
+
+                        // Coordinate dynamic walks based on stdout
+                        if (data.includes("Agent: Macro Data Analyst") && currentActiveRoom !== 'room-scout') {
+                            setHighlightRoom('room-scout', 'active-scout');
+                            currentActiveRoom = 'room-scout';
+                        } 
+                        else if (data.includes("Agent: Asset Data Analyst") && currentActiveRoom !== 'room-watcher') {
+                            animateDataTransfer('room-scout', 'room-advisor', 'sprite-walker-scout', 'var(--accent-green)', () => {
+                                setHighlightRoom('room-watcher', 'active-watcher');
+                                currentActiveRoom = 'room-watcher';
+                            });
+                        } 
+                        else if (data.includes("Agent: Flows & Positioning Analyst") && currentActiveRoom !== 'room-flows') {
+                            animateDataTransfer('room-watcher', 'room-cio', 'sprite-walker-watcher', 'var(--accent-red)', () => {
+                                setHighlightRoom('room-flows', 'active-flows');
+                                currentActiveRoom = 'room-flows';
+                            });
+                        } 
+                        else if (data.includes("Agent: Chief Macro Economist") && currentActiveRoom !== 'room-advisor') {
+                            animateDataTransfer('room-flows', 'room-cio', 'sprite-walker-flows', 'var(--accent-blue)', () => {
+                                setHighlightRoom('room-advisor', 'active-advisor');
+                                currentActiveRoom = 'room-advisor';
+                            });
+                        } 
+                        else if (data.includes("Agent: Lead Asset Economist") && currentActiveRoom !== 'room-cio') {
+                            animateDataTransfer('room-advisor', 'room-cio', 'sprite-walker-advisor', 'var(--accent-purple)', () => {
+                                setHighlightRoom('room-cio', 'active-cio');
+                                currentActiveRoom = 'room-cio';
+                            });
+                        }
+                    };
+                } else {
+                    terminalOutput.textContent += "\nSubprocess core failure.";
+                    btnRun.disabled = false;
+                }
+            } catch (err) {
+                terminalOutput.textContent += `\nConnection crash: ${err}`;
+                btnRun.disabled = false;
+            }
+        });
+
+        // Handle report markdown file downloading
+        btnDownloadMd.addEventListener('click', () => {
+            if (!activeReportContent) return;
+            const blob = new Blob([activeReportContent], { type: 'text/markdown;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', activeReportFilename || 'report.md');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        fetchHistory();
+    </script>
+</body>
+</html>
