@@ -3,6 +3,7 @@ import subprocess
 import threading
 import queue
 import os
+import sys
 from supabase import create_client, Client
 
 app = Flask(__name__)
@@ -41,7 +42,7 @@ def run_desk():
     # Start main.py as a subprocess
     try:
         proc = subprocess.Popen(
-            ['py', '-3.13', 'main.py'],
+            [sys.executable, 'main.py'],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             cwd=os.getcwd()

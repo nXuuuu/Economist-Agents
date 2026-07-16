@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FINHUBKH — Quantum Macro Desk</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Press+Start+2P&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Press+Start+2P&family=Outfit:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f3f4f6; /* Modern light gray background */
-            --panel-bg: #e5e7eb; /* Silver gray panels */
-            --border-color: #cbd5e1; /* Slate gray borders */
-            --text-dark: #0f172a; /* Slate black text */
-            
+            --bg-color: #f3f4f6;
+            /* Modern light gray background */
+            --panel-bg: #e5e7eb;
+            /* Silver gray panels */
+            --border-color: #cbd5e1;
+            /* Slate gray borders */
+            --text-dark: #0f172a;
+            /* Slate black text */
+
             --accent-green: #10b981;
             --accent-blue: #3b82f6;
             --accent-gold: #f59e0b;
             --accent-purple: #8b5cf6;
             --accent-red: #ef4444;
-            
+
             --glow-green: 0 0 10px rgba(16, 185, 129, 0.2);
             --glow-blue: 0 0 10px rgba(59, 130, 246, 0.2);
             --glow-gold: 0 0 10px rgba(245, 158, 11, 0.2);
@@ -248,10 +255,12 @@
             background-color: var(--bg-color);
             height: 55%;
             border-bottom: 1px solid var(--border-color);
-            padding: 16px 20px; /* Restores spacing around outer wall */
+            padding: 16px 20px;
+            /* Restores spacing around outer wall */
             overflow: hidden;
             position: relative;
-            flex-shrink: 0; /* Prevents map from shrinking when logs fill terminal */
+            flex-shrink: 0;
+            /* Prevents map from shrinking when logs fill terminal */
             transition: background-color 0.4s ease, border-color 0.4s ease;
         }
 
@@ -260,23 +269,26 @@
             width: 100%;
             height: 100%;
             position: relative;
-            background-color: #4b5563; /* Slate gray base floor */
-            background-image: 
+            background-color: #4b5563;
+            /* Slate gray base floor */
+            background-image:
                 linear-gradient(#374151 1px, transparent 1px),
                 linear-gradient(90deg, #374151 1px, transparent 1px);
             background-size: 24px 24px;
-            border: 6px solid #374151; /* THE WALL: Solid concrete walls surrounding map */
+            border: 6px solid #374151;
+            /* THE WALL: Solid concrete walls surrounding map */
             border-radius: 8px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             cursor: crosshair;
             transition: background-color 0.4s ease, border-color 0.4s ease;
         }
 
         body.night-shift .floor-map {
-            background-color: #1e293b; /* Dark slate floor */
+            background-color: #1e293b;
+            /* Dark slate floor */
             border-color: #0f172a;
-            background-image: 
+            background-image:
                 linear-gradient(#0f172a 1px, transparent 1px),
                 linear-gradient(90deg, #0f172a 1px, transparent 1px);
         }
@@ -299,23 +311,71 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             z-index: 3;
             transition: all 0.3s ease;
         }
 
-        .office-room.active-scout { border-color: var(--accent-green); box-shadow: var(--glow-green); }
-        .office-room.active-watcher { border-color: var(--accent-red); box-shadow: var(--glow-red); }
-        .office-room.active-flows { border-color: var(--accent-blue); box-shadow: var(--glow-blue); }
-        .office-room.active-advisor { border-color: var(--accent-purple); box-shadow: var(--glow-purple); }
-        .office-room.active-cio { border-color: var(--accent-gold); box-shadow: var(--glow-gold); }
+        .office-room.active-scout {
+            border-color: var(--accent-green);
+            box-shadow: var(--glow-green);
+        }
+
+        .office-room.active-watcher {
+            border-color: var(--accent-red);
+            box-shadow: var(--glow-red);
+        }
+
+        .office-room.active-flows {
+            border-color: var(--accent-blue);
+            box-shadow: var(--glow-blue);
+        }
+
+        .office-room.active-advisor {
+            border-color: var(--accent-purple);
+            box-shadow: var(--glow-purple);
+        }
+
+        .office-room.active-cio {
+            border-color: var(--accent-gold);
+            box-shadow: var(--glow-gold);
+        }
 
         /* Widescreen percentage placements to balance elements */
-        .room-scout { top: 15px; left: 6%; width: 140px; height: 110px; }
-        .room-watcher { bottom: 15px; left: 6%; width: 140px; height: 110px; }
-        .room-flows { top: 15px; right: 6%; width: 140px; height: 110px; }
-        .room-advisor { bottom: 15px; right: 6%; width: 140px; height: 110px; }
-        .room-cio { top: calc(50% - 55px); left: calc(50% - 70px); width: 140px; height: 110px; }
+        .room-scout {
+            top: 15px;
+            left: 6%;
+            width: 140px;
+            height: 110px;
+        }
+
+        .room-watcher {
+            bottom: 15px;
+            left: 6%;
+            width: 140px;
+            height: 110px;
+        }
+
+        .room-flows {
+            top: 15px;
+            right: 6%;
+            width: 140px;
+            height: 110px;
+        }
+
+        .room-advisor {
+            bottom: 15px;
+            right: 6%;
+            width: 140px;
+            height: 110px;
+        }
+
+        .room-cio {
+            top: calc(50% - 55px);
+            left: calc(50% - 70px);
+            width: 140px;
+            height: 110px;
+        }
 
         .room-title {
             font-size: 0.6rem;
@@ -324,16 +384,30 @@
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding-bottom: 4px;
             margin-bottom: 4px;
         }
 
-        .office-room.active-scout .room-title { color: var(--accent-green); }
-        .office-room.active-watcher .room-title { color: var(--accent-red); }
-        .office-room.active-flows .room-title { color: var(--accent-blue); }
-        .office-room.active-advisor .room-title { color: var(--accent-purple); }
-        .office-room.active-cio .room-title { color: var(--accent-gold); }
+        .office-room.active-scout .room-title {
+            color: var(--accent-green);
+        }
+
+        .office-room.active-watcher .room-title {
+            color: var(--accent-red);
+        }
+
+        .office-room.active-flows .room-title {
+            color: var(--accent-blue);
+        }
+
+        .office-room.active-advisor .room-title {
+            color: var(--accent-purple);
+        }
+
+        .office-room.active-cio .room-title {
+            color: var(--accent-gold);
+        }
 
         .desk-area {
             display: flex;
@@ -405,11 +479,30 @@
             border-radius: 50%;
         }
 
-        .office-room.active-scout .pc-monitor { background: radial-gradient(circle, #4ade80 0%, #16a34a 100%); box-shadow: 0 0 10px var(--accent-green); }
-        .office-room.active-watcher .pc-monitor { background: radial-gradient(circle, #f87171 0%, #dc2626 100%); box-shadow: 0 0 10px var(--accent-red); }
-        .office-room.active-flows .pc-monitor { background: radial-gradient(circle, #60a5fa 0%, #2563eb 100%); box-shadow: 0 0 10px var(--accent-blue); }
-        .office-room.active-advisor .pc-monitor { background: radial-gradient(circle, #c084fc 0%, #9333ea 100%); box-shadow: 0 0 10px var(--accent-purple); }
-        .office-room.active-cio .pc-monitor { background: radial-gradient(circle, #fbbf24 0%, #d97706 100%); box-shadow: 0 0 10px var(--accent-gold); }
+        .office-room.active-scout .pc-monitor {
+            background: radial-gradient(circle, #4ade80 0%, #16a34a 100%);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .office-room.active-watcher .pc-monitor {
+            background: radial-gradient(circle, #f87171 0%, #dc2626 100%);
+            box-shadow: 0 0 10px var(--accent-red);
+        }
+
+        .office-room.active-flows .pc-monitor {
+            background: radial-gradient(circle, #60a5fa 0%, #2563eb 100%);
+            box-shadow: 0 0 10px var(--accent-blue);
+        }
+
+        .office-room.active-advisor .pc-monitor {
+            background: radial-gradient(circle, #c084fc 0%, #9333ea 100%);
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+
+        .office-room.active-cio .pc-monitor {
+            background: radial-gradient(circle, #fbbf24 0%, #d97706 100%);
+            box-shadow: 0 0 10px var(--accent-gold);
+        }
 
         /* Graal RPG character design */
         .pixel-avatar {
@@ -449,6 +542,7 @@
             background-color: #000;
             box-shadow: -3px 0 #000;
         }
+
         .facing-left .avatar-head::before {
             content: '';
             position: absolute;
@@ -482,16 +576,45 @@
         }
 
         /* Colors */
-        .scout-body { background-color: var(--accent-green); }
-        .scout-hair { background-color: #f97316; }
-        .watcher-body { background-color: var(--accent-red); }
-        .watcher-hair { background-color: #7c2d12; }
-        .flows-body { background-color: var(--accent-blue); }
-        .flows-hair { background-color: #1e3a8a; }
-        .advisor-body { background-color: var(--accent-purple); }
-        .advisor-hair { background-color: #94a3b8; }
-        .cio-body { background-color: var(--accent-gold); }
-        .cio-hair { background-color: #0f172a; }
+        .scout-body {
+            background-color: var(--accent-green);
+        }
+
+        .scout-hair {
+            background-color: #f97316;
+        }
+
+        .watcher-body {
+            background-color: var(--accent-red);
+        }
+
+        .watcher-hair {
+            background-color: #7c2d12;
+        }
+
+        .flows-body {
+            background-color: var(--accent-blue);
+        }
+
+        .flows-hair {
+            background-color: #1e3a8a;
+        }
+
+        .advisor-body {
+            background-color: var(--accent-purple);
+        }
+
+        .advisor-hair {
+            background-color: #94a3b8;
+        }
+
+        .cio-body {
+            background-color: var(--accent-gold);
+        }
+
+        .cio-hair {
+            background-color: #0f172a;
+        }
 
         /* Bouncing head nod sitting */
         .sitting .avatar-head {
@@ -499,8 +622,13 @@
         }
 
         @keyframes graal-nod {
-            from { transform: translateY(0); }
-            to { transform: translateY(1.5px); }
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(1.5px);
+            }
         }
 
         /* Typing hands working */
@@ -511,7 +639,9 @@
             width: 12px;
             height: 4px;
         }
-        .typing-hands::before, .typing-hands::after {
+
+        .typing-hands::before,
+        .typing-hands::after {
             content: '';
             position: absolute;
             width: 3px;
@@ -519,8 +649,16 @@
             background-color: #ffd8a8;
             border-radius: 50%;
         }
-        .typing-hands::before { left: 0; animation: graal-type 0.2s infinite alternate; }
-        .typing-hands::after { right: 0; animation: graal-type 0.2s infinite alternate-reverse; }
+
+        .typing-hands::before {
+            left: 0;
+            animation: graal-type 0.2s infinite alternate;
+        }
+
+        .typing-hands::after {
+            right: 0;
+            animation: graal-type 0.2s infinite alternate-reverse;
+        }
 
         .office-room.active-scout #hands-scout,
         .office-room.active-watcher #hands-watcher,
@@ -534,10 +672,19 @@
         .spooked {
             animation: graal-spook 0.4s ease-out;
         }
+
         @keyframes graal-spook {
-            0% { transform: scale(1.3) rotate(-8deg); }
-            50% { transform: scale(1.3) rotate(8deg); }
-            100% { transform: scale(1) rotate(0); }
+            0% {
+                transform: scale(1.3) rotate(-8deg);
+            }
+
+            50% {
+                transform: scale(1.3) rotate(8deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0);
+            }
         }
 
         /* Speech bubbles for interaction */
@@ -569,7 +716,7 @@
             font-size: 0.6rem;
             display: none;
             z-index: 12;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
             white-space: nowrap;
         }
 
@@ -583,8 +730,13 @@
         }
 
         @keyframes graal-float {
-            from { transform: translateY(0); }
-            to { transform: translateY(-2px); }
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-2px);
+            }
         }
 
         /* CSS-Drawn Vector Gold Coin */
@@ -601,14 +753,29 @@
             cursor: pointer;
             pointer-events: none;
         }
+
         @keyframes spin-coin {
-            0% { transform: scaleX(1); }
-            50% { transform: scaleX(0); }
-            100% { transform: scaleX(1); }
+            0% {
+                transform: scaleX(1);
+            }
+
+            50% {
+                transform: scaleX(0);
+            }
+
+            100% {
+                transform: scaleX(1);
+            }
         }
+
         @keyframes bounce-in {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Walker sprites with swinging legs */
@@ -618,17 +785,36 @@
             display: none;
         }
 
-        .walking .left-leg { animation: graal-leg 0.2s infinite alternate linear; }
-        .walking .right-leg { animation: graal-leg 0.2s infinite alternate-reverse linear; }
-        .walking { animation: graal-bob 0.2s infinite alternate ease-in-out; }
+        .walking .left-leg {
+            animation: graal-leg 0.2s infinite alternate linear;
+        }
+
+        .walking .right-leg {
+            animation: graal-leg 0.2s infinite alternate-reverse linear;
+        }
+
+        .walking {
+            animation: graal-bob 0.2s infinite alternate ease-in-out;
+        }
 
         @keyframes graal-leg {
-            from { transform: rotate(-30deg); }
-            to { transform: rotate(30deg); }
+            from {
+                transform: rotate(-30deg);
+            }
+
+            to {
+                transform: rotate(30deg);
+            }
         }
+
         @keyframes graal-bob {
-            from { transform: translateY(0); }
-            to { transform: translateY(-3px); }
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-3px);
+            }
         }
 
         /* Quest scroll folder delivery */
@@ -656,26 +842,30 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         /* Glare overlay for Wall TV screen */
         .wall-tv-screen::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 60%);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 60%);
             pointer-events: none;
             border-radius: 3px;
         }
 
         /* GRAY TERMINAL REDESIGN - Stretches full width at bottom of center column */
         .terminal-panel {
-            height: 45%; 
+            height: 45%;
             display: flex;
             flex-direction: column;
-            background-color: #cbd5e1; 
-            min-height: 0; /* CRITICAL: Allow container to scroll instead of pushing other components out */
+            background-color: #cbd5e1;
+            min-height: 0;
+            /* CRITICAL: Allow container to scroll instead of pushing other components out */
             transition: background-color 0.4s ease;
         }
 
@@ -771,7 +961,8 @@
         .report-body {
             flex-grow: 1;
             padding: 15px;
-            overflow: hidden; /* Hide outer scrollbar */
+            overflow: hidden;
+            /* Hide outer scrollbar */
             display: flex;
             flex-direction: column;
             background-color: #e5e7eb;
@@ -784,7 +975,8 @@
 
         .report-column {
             width: 100%;
-            height: 100%; /* Fill entire vertical height */
+            height: 100%;
+            /* Fill entire vertical height */
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -792,7 +984,8 @@
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             padding: 15px;
-            overflow: hidden; /* Contain scroll content */
+            overflow: hidden;
+            /* Contain scroll content */
             transition: background-color 0.4s ease, border-color 0.4s ease;
         }
 
@@ -810,7 +1003,8 @@
             border-bottom: 1px solid #cbd5e1;
             padding-bottom: 6px;
             margin-bottom: 8px;
-            flex-shrink: 0; /* Keep title from shrinking */
+            flex-shrink: 0;
+            /* Keep title from shrinking */
         }
 
         body.night-shift .column-title {
@@ -823,8 +1017,10 @@
             font-size: 0.82rem;
             line-height: 1.65;
             color: #1e293b;
-            overflow-y: auto; /* Enable internal scrolling on the text content */
-            flex-grow: 1; /* Stretch to fill remainder of card */
+            overflow-y: auto;
+            /* Enable internal scrolling on the text content */
+            flex-grow: 1;
+            /* Stretch to fill remainder of card */
             transition: color 0.4s ease;
         }
 
@@ -841,6 +1037,7 @@
             border-bottom: 1px solid #cbd5e1;
             padding-bottom: 4px;
         }
+
         body.night-shift .column-content h1 {
             color: #f59e0b;
             border-bottom-color: #334155;
@@ -853,6 +1050,7 @@
             margin-top: 12px;
             margin-bottom: 6px;
         }
+
         body.night-shift .column-content h2 {
             color: #3b82f6;
         }
@@ -864,6 +1062,7 @@
             margin-top: 10px;
             margin-bottom: 4px;
         }
+
         body.night-shift .column-content h3 {
             color: #cbd5e1;
         }
@@ -872,7 +1071,8 @@
             margin-bottom: 8px;
         }
 
-        .column-content ul, .column-content ol {
+        .column-content ul,
+        .column-content ol {
             margin-left: 20px;
             margin-bottom: 10px;
         }
@@ -883,13 +1083,14 @@
 
         .column-content code {
             font-family: 'Fira Code', monospace;
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0, 0, 0, 0.05);
             padding: 2px 4px;
             border-radius: 4px;
             font-size: 0.75rem;
         }
+
         body.night-shift .column-content code {
-            background-color: rgba(255,255,255,0.08);
+            background-color: rgba(255, 255, 255, 0.08);
         }
 
         .column-content pre {
@@ -900,6 +1101,7 @@
             overflow-x: auto;
             margin-bottom: 10px;
         }
+
         .column-content pre code {
             background-color: transparent;
             color: inherit;
@@ -911,18 +1113,19 @@
             border-collapse: collapse;
             margin: 12px 0;
             font-size: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border-radius: 6px;
             overflow: hidden;
         }
 
-        .column-content th, .column-content td {
+        .column-content th,
+        .column-content td {
             border: 1px solid #cbd5e1;
             padding: 8px 10px;
             text-align: left;
         }
 
-        body.night-shift .column-content th, 
+        body.night-shift .column-content th,
         body.night-shift .column-content td {
             border-color: #334155;
         }
@@ -937,15 +1140,17 @@
             background-color: #334155;
             color: #fff;
         }
-        
+
         .column-content tr:nth-child(even) {
             background-color: rgba(0, 0, 0, 0.02);
         }
+
         body.night-shift .column-content tr:nth-child(even) {
             background-color: rgba(255, 255, 255, 0.02);
         }
     </style>
 </head>
+
 <body>
 
     <!-- Sidebar archive list -->
@@ -962,28 +1167,33 @@
         <!-- Music player Widget -->
         <div class="music-widget">
             <h3 class="sidebar-title" style="margin-top: 10px;">Desk Radio</h3>
-            
+
             <!-- Default Play / Stop control -->
             <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
                 <button id="btnMusic" class="btn-music">▶ PLAY</button>
-                <input type="range" id="volSlider" min="0" max="1" step="0.1" value="0.4" style="width: 70px; cursor: pointer;">
+                <input type="range" id="volSlider" min="0" max="1" step="0.1" value="0.4"
+                    style="width: 70px; cursor: pointer;">
             </div>
 
             <!-- YouTube Video Embed Option -->
             <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
                 <span style="font-size: 0.65rem; color: #475569; font-weight: 700;">Custom YouTube Stream:</span>
                 <div style="display: flex; gap: 6px;">
-                    <input type="text" id="ytUrlInput" placeholder="Paste YouTube link..." style="flex-grow: 1; padding: 4px 6px; border-radius: 4px; border: 1px solid #94a3b8; font-size: 0.7rem; background-color: #f3f4f6; color: #000; font-family: inherit;">
+                    <input type="text" id="ytUrlInput" placeholder="Paste YouTube link..."
+                        style="flex-grow: 1; padding: 4px 6px; border-radius: 4px; border: 1px solid #94a3b8; font-size: 0.7rem; background-color: #f3f4f6; color: #000; font-family: inherit;">
                     <button id="btnLoadYt" class="btn-music" style="padding: 4px 8px;">Load</button>
                 </div>
             </div>
 
             <!-- ENLARGED Youtube frame container + API Target div -->
-            <div id="ytPlayerContainer" style="margin-top: 10px; display: none; height: 140px; width: 100%; overflow: hidden; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #000;">
+            <div id="ytPlayerContainer"
+                style="margin-top: 10px; display: none; height: 140px; width: 100%; overflow: hidden; border-radius: 4px; border: 1px solid #cbd5e1; background-color: #000;">
                 <div id="ytPlayer"></div>
             </div>
 
-            <div id="radioStatus" style="font-size: 0.6rem; color: #475569; font-family: 'Fira Code', monospace; margin-top: 6px;">Radio Standby</div>
+            <div id="radioStatus"
+                style="font-size: 0.6rem; color: #475569; font-family: 'Fira Code', monospace; margin-top: 6px;">Radio
+                Standby</div>
         </div>
     </div>
 
@@ -993,7 +1203,9 @@
         <div class="top-bar">
             <div>
                 <h2>FINHUBKH INTEGRATED CORES</h2>
-                <span id="currentStatus" style="font-size: 0.7rem; color: #475569; font-family: 'Fira Code', monospace;">STATUS: CORES_STANDBY</span>
+                <span id="currentStatus"
+                    style="font-size: 0.7rem; color: #475569; font-family: 'Fira Code', monospace;">STATUS:
+                    CORES_STANDBY</span>
             </div>
             <div style="display: flex; align-items: center;">
                 <button class="btn-music" id="btnThemeToggle" style="margin-right: 15px;">🌙 NIGHT SHIFT</button>
@@ -1002,11 +1214,17 @@
         </div>
 
         <!-- Interactive Directives Command Center -->
-        <div style="display: flex; gap: 10px; background-color: var(--panel-bg); border-bottom: 1px solid var(--border-color); padding: 8px 20px; transition: background-color 0.4s ease, border-color 0.4s ease;">
-            <span style="font-size: 0.7rem; color: #475569; align-self: center; font-weight: 700; text-transform: uppercase;">Directives:</span>
-            <button class="btn-music" id="btnCoffee" style="padding: 4px 10px; font-size: 0.65rem;">☕ COFFEE BREAK</button>
-            <button class="btn-music" id="btnBonus" style="padding: 4px 10px; font-size: 0.65rem;">🪙 SHOWER BONUS</button>
-            <button class="btn-music" id="btnPanic" style="padding: 4px 10px; font-size: 0.65rem; background-color: #fee2e2; border-color: #fca5a5; color: #b91c1c;">⚠️ PANIC ALERT</button>
+        <div
+            style="display: flex; gap: 10px; background-color: var(--panel-bg); border-bottom: 1px solid var(--border-color); padding: 8px 20px; transition: background-color 0.4s ease, border-color 0.4s ease;">
+            <span
+                style="font-size: 0.7rem; color: #475569; align-self: center; font-weight: 700; text-transform: uppercase;">Directives:</span>
+            <button class="btn-music" id="btnCoffee" style="padding: 4px 10px; font-size: 0.65rem;">☕ COFFEE
+                BREAK</button>
+            <button class="btn-music" id="btnBonus" style="padding: 4px 10px; font-size: 0.65rem;">🎁 SHOWER
+                BONUS</button>
+            <button class="btn-music" id="btnPanic"
+                style="padding: 4px 10px; font-size: 0.65rem; background-color: #fee2e2; border-color: #fca5a5; color: #b91c1c;">⚠️
+                PANIC ALERT</button>
         </div>
 
         <!-- Widescreen Floor Map Wrapper (Padding creates the walls) -->
@@ -1016,36 +1234,50 @@
                 <!-- Paths formatted to stretch across 100% width -->
                 <div class="stone-path" style="top: 15px; left: calc(6% + 65px); width: 10px; bottom: 15px;"></div>
                 <div class="stone-path" style="top: 15px; right: calc(6% + 65px); width: 10px; bottom: 15px;"></div>
-                <div class="stone-path" style="left: calc(6% + 140px); width: calc(44% - 65px); top: 65px; height: 10px;"></div>
-                <div class="stone-path" style="right: calc(6% + 140px); width: calc(44% - 65px); top: 65px; height: 10px;"></div>
-                <div class="stone-path" style="left: calc(6% + 140px); width: calc(44% - 65px); bottom: 65px; height: 10px;"></div>
-                <div class="stone-path" style="right: calc(6% + 140px); width: calc(44% - 65px); bottom: 65px; height: 10px;"></div>
+                <div class="stone-path"
+                    style="left: calc(6% + 140px); width: calc(44% - 65px); top: 65px; height: 10px;"></div>
+                <div class="stone-path"
+                    style="right: calc(6% + 140px); width: calc(44% - 65px); top: 65px; height: 10px;"></div>
+                <div class="stone-path"
+                    style="left: calc(6% + 140px); width: calc(44% - 65px); bottom: 65px; height: 10px;"></div>
+                <div class="stone-path"
+                    style="right: calc(6% + 140px); width: calc(44% - 65px); bottom: 65px; height: 10px;"></div>
 
                 <!-- Scroll delivery sprite -->
                 <div class="data-folder" id="movingFolder">📜</div>
 
                 <!-- TRADING FLOOR WALL TV BOARD (Only displays Gold prices & retro gold graph) -->
-                <div class="wall-tv-screen" style="position: absolute; left: calc(50% - 105px); top: 12px; width: 210px; height: 80px; background-color: #0c1524; border: 3px solid #475569; border-radius: 6px; box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.9); z-index: 2; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; font-family: 'Fira Code', monospace; overflow: hidden;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #fbbf24; border-bottom: 1.5px solid rgba(251,191,36,0.25); padding-bottom: 2px;">
+                <div class="wall-tv-screen"
+                    style="position: absolute; left: calc(50% - 105px); top: 12px; width: 210px; height: 80px; background-color: #0c1524; border: 3px solid #475569; border-radius: 6px; box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.9); z-index: 2; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; font-family: 'Fira Code', monospace; overflow: hidden;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #fbbf24; border-bottom: 1.5px solid rgba(251,191,36,0.25); padding-bottom: 2px;">
                         <span>🟡 GOLD TICKER</span>
-                        <span id="tickerGold" style="font-weight: 700; text-shadow: 0 0 5px rgba(251,191,36,0.65);">$4,003.10</span>
+                        <span id="tickerGold"
+                            style="font-weight: 700; text-shadow: 0 0 5px rgba(251,191,36,0.65);">$4,003.10</span>
                     </div>
                     <!-- SVG Sparkline inside TV -->
-                    <svg id="sparklineSvg" width="100%" height="45" style="background-color: #020617; border-radius: 4px; overflow: visible;">
-                        <polyline id="sparklineGold" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
+                    <svg id="sparklineSvg" width="100%" height="45"
+                        style="background-color: #020617; border-radius: 4px; overflow: visible;">
+                        <polyline id="sparklineGold" fill="none" stroke="#fbbf24" stroke-width="1.8"
+                            stroke-linecap="round" stroke-linejoin="round" points=""></polyline>
                     </svg>
                 </div>
 
                 <!-- Central Conference Meeting Table (No overlaps) -->
-                <div class="meeting-room-group" style="position: absolute; left: 26%; top: calc(50% - 40px); width: 90px; height: 80px; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                <div class="meeting-room-group"
+                    style="position: absolute; left: 26%; top: calc(50% - 40px); width: 90px; height: 80px; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
                     <div style="font-size: 1.1rem; line-height: 1;" title="Chairs">🪑 &nbsp; 🪑</div>
-                    <div class="furniture-props" style="width: 85px; height: 22px; font-size: 0.6rem; color: #475569; font-weight: 700; transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;">Meeting Table</div>
+                    <div class="furniture-props"
+                        style="width: 85px; height: 22px; font-size: 0.6rem; color: #475569; font-weight: 700; transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;">
+                        Meeting Table</div>
                     <div style="font-size: 1.1rem; line-height: 1;" title="Chairs">🪑 &nbsp; 🪑</div>
                 </div>
 
                 <!-- High-tech Server cage (No overlaps) -->
-                <div class="server-room-group" style="position: absolute; right: 26%; top: calc(50% - 20px); width: 60px; height: 40px; z-index: 2;">
-                    <div class="furniture-props" style="width: 100%; height: 100%; background-color: #475569; border-color: #1e293b; color: #10b981; font-family: monospace; font-size: 0.5rem; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                <div class="server-room-group"
+                    style="position: absolute; right: 26%; top: calc(50% - 20px); width: 60px; height: 40px; z-index: 2;">
+                    <div class="furniture-props"
+                        style="width: 100%; height: 100%; background-color: #475569; border-color: #1e293b; color: #10b981; font-family: monospace; font-size: 0.5rem; text-align: center; display: flex; flex-direction: column; justify-content: center;">
                         <span>SERVER</span>
                         <span style="animation: graal-type 0.3s infinite alternate;">● ●</span>
                     </div>
@@ -1056,7 +1288,9 @@
                     <div class="room-title">Scout Core</div>
                     <div class="desk-area">
                         <div class="office-desk" onclick="spookAgent('scout', ['?!', 'Searching...', 'Busy!'])">
-                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                            <div class="pc-monitor">
+                                <div class="pc-screen-glow"></div>
+                            </div>
                             <div class="pixel-avatar sitting facing-right" id="avatar-scout">
                                 <div class="avatar-hair scout-hair"></div>
                                 <div class="avatar-head"></div>
@@ -1073,8 +1307,11 @@
                 <div class="office-room room-watcher" id="room-watcher">
                     <div class="room-title">Watcher Core</div>
                     <div class="desk-area">
-                        <div class="office-desk" onclick="spookAgent('watcher', ['Watching!', 'Prices moving...', 'DXY high!'])">
-                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                        <div class="office-desk"
+                            onclick="spookAgent('watcher', ['Watching!', 'Prices moving...', 'DXY high!'])">
+                            <div class="pc-monitor">
+                                <div class="pc-screen-glow"></div>
+                            </div>
                             <div class="pixel-avatar sitting facing-right" id="avatar-watcher">
                                 <div class="avatar-hair watcher-hair"></div>
                                 <div class="avatar-head"></div>
@@ -1091,8 +1328,11 @@
                 <div class="office-room room-flows" id="room-flows">
                     <div class="room-title">Flow Tracer</div>
                     <div class="desk-area">
-                        <div class="office-desk" onclick="spookAgent('flows', ['Tracing!', 'Huge flows!', 'COT data!'])">
-                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                        <div class="office-desk"
+                            onclick="spookAgent('flows', ['Tracing!', 'Huge flows!', 'COT data!'])">
+                            <div class="pc-monitor">
+                                <div class="pc-screen-glow"></div>
+                            </div>
                             <div class="pixel-avatar sitting facing-left" id="avatar-flows">
                                 <div class="avatar-hair flows-hair"></div>
                                 <div class="avatar-head"></div>
@@ -1109,8 +1349,11 @@
                 <div class="office-room room-advisor" id="room-advisor">
                     <div class="room-title">Advisor Core</div>
                     <div class="desk-area">
-                        <div class="office-desk" onclick="spookAgent('advisor', ['Advising...', 'Risk off!', 'Macro trend!'])">
-                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                        <div class="office-desk"
+                            onclick="spookAgent('advisor', ['Advising...', 'Risk off!', 'Macro trend!'])">
+                            <div class="pc-monitor">
+                                <div class="pc-screen-glow"></div>
+                            </div>
                             <div class="pixel-avatar sitting facing-left" id="avatar-advisor">
                                 <div class="avatar-hair advisor-hair"></div>
                                 <div class="avatar-head"></div>
@@ -1127,8 +1370,11 @@
                 <div class="office-room room-cio" id="room-cio">
                     <div class="room-title">Director Office</div>
                     <div class="desk-area">
-                        <div class="office-desk director-desk" onclick="spookAgent('cio', ['Deciding...', 'Trade execution!'])">
-                            <div class="pc-monitor"><div class="pc-screen-glow"></div></div>
+                        <div class="office-desk director-desk"
+                            onclick="spookAgent('cio', ['Deciding...', 'Trade execution!'])">
+                            <div class="pc-monitor">
+                                <div class="pc-screen-glow"></div>
+                            </div>
                             <div class="pixel-avatar sitting" id="avatar-cio">
                                 <div class="avatar-hair cio-hair"></div>
                                 <div class="avatar-head"></div>
@@ -1206,13 +1452,15 @@
                 <span>FINHUBKH Executive Decision Board</span>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span id="activeReportName" style="color: #c2410c;">NO_ACTIVE_RECORD</span>
-                    <button class="btn-music" id="btnDownloadMd" style="padding: 3px 8px; font-size: 0.6rem; display: none;">📥 DOWNLOAD</button>
+                    <button class="btn-music" id="btnDownloadMd"
+                        style="padding: 3px 8px; font-size: 0.6rem; display: none;">📥 DOWNLOAD</button>
                 </div>
             </div>
             <div class="report-body">
                 <div class="report-column">
                     <div class="column-title">Portfolio Analysis Report</div>
-                    <div class="column-content" id="reportEnglish">No report loaded. Double click a record on the left to read.</div>
+                    <div class="column-content" id="reportEnglish">No report loaded. Double click a record on the left
+                        to read.</div>
                 </div>
             </div>
         </div>
@@ -1236,7 +1484,7 @@
         const currentStatus = document.getElementById('currentStatus');
         const floorMap = document.getElementById('floorMap');
         const movingFolder = document.getElementById('movingFolder');
-        
+
         // Download controls
         const btnDownloadMd = document.getElementById('btnDownloadMd');
         let activeReportContent = "";
@@ -1265,18 +1513,18 @@
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
-                
+
                 osc.type = 'sine';
                 const now = audioCtx.currentTime;
                 osc.frequency.setValueAtTime(880, now); // A5 note
                 osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6 note
-                
+
                 gain.gain.setValueAtTime(volSlider.value * 0.2, now);
                 gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-                
+
                 osc.start(now);
                 osc.stop(now + 0.25);
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         }
 
         // Realistic mechanical keyboard keystroke synthesizer (noise-decay clack + thud)
@@ -1286,31 +1534,31 @@
                 const bufferSize = audioCtx.sampleRate * 0.05; // 50ms buffer
                 const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 const data = buffer.getChannelData(0);
-                
+
                 // Fill buffer with white noise for the clack
                 for (let i = 0; i < bufferSize; i++) {
                     data[i] = Math.random() * 2 - 1;
                 }
-                
+
                 const noiseNode = audioCtx.createBufferSource();
                 noiseNode.buffer = buffer;
-                
+
                 // Bandpass filter to mimic key switch casing resonance
                 const filter = audioCtx.createBiquadFilter();
                 filter.type = 'bandpass';
                 // Add slight random pitch variation per keystroke for natural feel
                 filter.frequency.setValueAtTime(1000 + Math.random() * 400, audioCtx.currentTime);
                 filter.Q.setValueAtTime(2.2, audioCtx.currentTime);
-                
+
                 const gain = audioCtx.createGain();
                 const now = audioCtx.currentTime;
                 gain.gain.setValueAtTime(volSlider.value * 0.08, now);
                 gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-                
+
                 noiseNode.connect(filter);
                 filter.connect(gain);
                 gain.connect(audioCtx.destination);
-                
+
                 // Low frequency thud oscillator representing key bottoming out
                 const osc = audioCtx.createOscillator();
                 const oscGain = audioCtx.createGain();
@@ -1318,16 +1566,16 @@
                 osc.frequency.setValueAtTime(120, now);
                 oscGain.gain.setValueAtTime(volSlider.value * 0.05, now);
                 oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-                
+
                 osc.connect(oscGain);
                 oscGain.connect(audioCtx.destination);
-                
+
                 noiseNode.start(now);
                 osc.start(now);
-                
+
                 noiseNode.stop(now + 0.05);
                 osc.stop(now + 0.05);
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         }
 
         // Night Shift Theme toggle
@@ -1342,12 +1590,12 @@
         });
 
         // DYNAMIC WALL TV GRAPH (Only tracks Gold prices)
-        let goldHistory = Array.from({length: 22}, () => 4000 + Math.random() * 15);
+        let goldHistory = Array.from({ length: 22 }, () => 4000 + Math.random() * 15);
 
         function drawSparkline() {
             const width = 198; // inner TV width
             const height = 45;
-            
+
             // Draw gold line
             const gMin = Math.min(...goldHistory);
             const gMax = Math.max(...goldHistory);
@@ -1375,23 +1623,23 @@
 
         // COMMAND CENTER DIRECTIVES BUTTONS
         let isCoffeeBreak = false;
-        
+
         // Coffee break Directive
         document.getElementById('btnCoffee').addEventListener('click', () => {
             if (isCoffeeBreak) return;
             isCoffeeBreak = true;
-            
+
             const cores = ['scout', 'watcher', 'flows', 'advisor'];
             cores.forEach(c => {
                 document.getElementById(`avatar-${c}`).style.opacity = '0.2';
                 const walker = document.getElementById(`sprite-walker-${c}`);
                 const walkerAvatar = walker.querySelector('.pixel-avatar');
-                
+
                 // Destination Meeting table room coordinates
                 const mapRect = floorMap.getBoundingClientRect();
                 const targetX = mapRect.width * 0.26 + (c === 'scout' || c === 'watcher' ? 5 : 45);
                 const targetY = mapRect.height * 0.45 + (c === 'scout' || c === 'flows' ? 5 : 30);
-                
+
                 // Start coords (desk)
                 const src = document.getElementById(`room-${c}`).getBoundingClientRect();
                 const startX = src.left - mapRect.left + src.width / 2 - 12;
@@ -1459,12 +1707,12 @@
             cores.forEach(c => {
                 const avatar = document.getElementById(`avatar-${c}`);
                 avatar.classList.add('spooked');
-                
+
                 spookAgent(c, ['CRASH?!', 'Gold surging!', 'Sell DXY!', 'Risk off!']);
-                
+
                 const monitor = document.getElementById(`room-${c}`).querySelector('.pc-monitor');
                 monitor.style.animation = 'graal-spook 0.1s infinite alternate';
-                
+
                 setTimeout(() => {
                     avatar.classList.remove('spooked');
                     monitor.style.animation = '';
@@ -1488,7 +1736,7 @@
                     const urlObj = new URL(url);
                     const urlParams = new URLSearchParams(urlObj.search);
                     videoId = urlParams.get('v');
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
                 }
             } else if (url.includes("youtu.be/")) {
@@ -1591,7 +1839,7 @@
         // Click to drop gold coins on the floor map
         floorMap.addEventListener('click', (e) => {
             if (e.target !== floorMap && !e.target.classList.contains('stone-path')) return;
-            
+
             const rect = floorMap.getBoundingClientRect();
             const x = e.clientX - rect.left - 7; // offset center
             const y = e.clientY - rect.top - 7;
@@ -1669,13 +1917,13 @@
 
                 // Strip out Khmer section if present
                 const rawContent = data.content.split("---KHMER_SECTION---")[0];
-                
+
                 // Configure marked to not add raw ids to avoid collisions
                 marked.setOptions({
                     headerIds: false,
                     mangle: false
                 });
-                
+
                 // Parse and render using marked.js
                 reportEnglish.innerHTML = marked.parse(rawContent);
             } catch (err) {
@@ -1796,10 +2044,10 @@
 
                 if (startData.status === 'started') {
                     const eventSource = new EventSource('/api/logs');
-                    
+
                     eventSource.onmessage = (event) => {
                         const data = event.data;
-                        
+
                         if (data === "---PROCESS_FINISHED---") {
                             eventSource.close();
                             btnRun.disabled = false;
@@ -1817,25 +2065,25 @@
                         if (data.includes("Agent: Macro Data Analyst") && currentActiveRoom !== 'room-scout') {
                             setHighlightRoom('room-scout', 'active-scout');
                             currentActiveRoom = 'room-scout';
-                        } 
+                        }
                         else if (data.includes("Agent: Asset Data Analyst") && currentActiveRoom !== 'room-watcher') {
                             animateDataTransfer('room-scout', 'room-advisor', 'sprite-walker-scout', 'var(--accent-green)', () => {
                                 setHighlightRoom('room-watcher', 'active-watcher');
                                 currentActiveRoom = 'room-watcher';
                             });
-                        } 
+                        }
                         else if (data.includes("Agent: Flows & Positioning Analyst") && currentActiveRoom !== 'room-flows') {
                             animateDataTransfer('room-watcher', 'room-cio', 'sprite-walker-watcher', 'var(--accent-red)', () => {
                                 setHighlightRoom('room-flows', 'active-flows');
                                 currentActiveRoom = 'room-flows';
                             });
-                        } 
+                        }
                         else if (data.includes("Agent: Chief Macro Economist") && currentActiveRoom !== 'room-advisor') {
                             animateDataTransfer('room-flows', 'room-cio', 'sprite-walker-flows', 'var(--accent-blue)', () => {
                                 setHighlightRoom('room-advisor', 'active-advisor');
                                 currentActiveRoom = 'room-advisor';
                             });
-                        } 
+                        }
                         else if (data.includes("Agent: Lead Asset Economist") && currentActiveRoom !== 'room-cio') {
                             animateDataTransfer('room-advisor', 'room-cio', 'sprite-walker-advisor', 'var(--accent-purple)', () => {
                                 setHighlightRoom('room-cio', 'active-cio');
@@ -1869,4 +2117,5 @@
         fetchHistory();
     </script>
 </body>
+
 </html>
