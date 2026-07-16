@@ -1148,10 +1148,206 @@
         body.night-shift .column-content tr:nth-child(even) {
             background-color: rgba(255, 255, 255, 0.02);
         }
+
+        /* ============================================================
+           MOBILE BOTTOM NAVIGATION BAR
+        ============================================================ */
+        .mobile-nav {
+            display: none;
+        }
+
+        /* ============================================================
+           RESPONSIVE: TABLET & MOBILE (max-width: 900px)
+        ============================================================ */
+        @media (max-width: 900px) {
+
+            /* Stack body vertically, allow scrolling */
+            body {
+                flex-direction: column;
+                height: 100dvh;
+                overflow: hidden;
+                position: relative;
+            }
+
+            /* Hide sidebar on mobile — accessed via bottom nav */
+            .sidebar {
+                display: none;
+                width: 100%;
+                height: calc(100dvh - 112px);
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                overflow-y: auto;
+                flex-shrink: 0;
+            }
+
+            .sidebar.mobile-active {
+                display: flex;
+            }
+
+            /* Middle column fills screen when active */
+            .middle-column {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                height: calc(100dvh - 112px);
+                border-right: none;
+                flex-shrink: 0;
+            }
+
+            .middle-column.mobile-active {
+                display: flex;
+            }
+
+            /* Right column fills screen when active */
+            .right-column {
+                display: none;
+                width: 100%;
+                height: calc(100dvh - 112px);
+                border-left: none;
+                flex-shrink: 0;
+            }
+
+            .right-column.mobile-active {
+                display: flex;
+            }
+
+            /* Top bar adjustments */
+            .top-bar {
+                padding: 0 14px;
+                height: 52px;
+            }
+
+            .top-bar h2 {
+                font-size: 0.75rem;
+            }
+
+            .btn-run {
+                padding: 8px 14px;
+                font-size: 0.72rem;
+            }
+
+            /* Shrink floor map wrapper for small screens */
+            .floor-map-wrapper {
+                height: 52%;
+                padding: 10px;
+            }
+
+            /* Terminal slightly smaller */
+            .terminal-panel {
+                height: 48%;
+            }
+
+            /* Report panel full height */
+            .report-panel {
+                height: 100%;
+            }
+
+            /* Command center buttons: wrap on small screens */
+            .top-bar > div:last-child {
+                gap: 6px;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            /* Mobile Bottom Navigation */
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background-color: var(--panel-bg);
+                border-top: 1px solid var(--border-color);
+                z-index: 1000;
+                transition: background-color 0.4s ease;
+            }
+
+            .mobile-nav-btn {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-family: 'Fira Code', monospace;
+                font-size: 0.55rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #64748b;
+                border-top: 2px solid transparent;
+                transition: all 0.2s ease;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .mobile-nav-btn.active {
+                color: #2563eb;
+                border-top-color: #2563eb;
+                background-color: rgba(59,130,246,0.06);
+            }
+
+            body.night-shift .mobile-nav {
+                background-color: #1e293b;
+                border-top-color: #334155;
+            }
+
+            body.night-shift .mobile-nav-btn {
+                color: #64748b;
+            }
+
+            body.night-shift .mobile-nav-btn.active {
+                color: #60a5fa;
+                border-top-color: #60a5fa;
+                background-color: rgba(96,165,250,0.08);
+            }
+
+            .mobile-nav-icon {
+                font-size: 1.25rem;
+                line-height: 1;
+            }
+        }
+
+        /* Extra small phones */
+        @media (max-width: 480px) {
+            .top-bar h2 {
+                font-size: 0.65rem;
+            }
+            .btn-run {
+                font-size: 0.65rem;
+                padding: 7px 10px;
+            }
+            .floor-map-wrapper {
+                height: 48%;
+                padding: 8px;
+            }
+            .terminal-body {
+                font-size: 0.68rem;
+            }
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- Mobile Bottom Navigation (hidden on desktop) -->
+    <nav class="mobile-nav" id="mobileNav">
+        <button class="mobile-nav-btn" id="mnavArchive" onclick="switchMobileTab('archive')">
+            <span class="mobile-nav-icon">📂</span>
+            Archive
+        </button>
+        <button class="mobile-nav-btn active" id="mnavDesk" onclick="switchMobileTab('desk')">
+            <span class="mobile-nav-icon">🏢</span>
+            Desk
+        </button>
+        <button class="mobile-nav-btn" id="mnavReport" onclick="switchMobileTab('report')">
+            <span class="mobile-nav-icon">📋</span>
+            Report
+        </button>
+    </nav>
 
     <!-- Sidebar archive list -->
     <div class="sidebar">
@@ -2113,6 +2309,55 @@
             link.click();
             document.body.removeChild(link);
         });
+
+        // ── MOBILE TAB SWITCHER ─────────────────────────────────────
+        const sidebar      = document.querySelector('.sidebar');
+        const middleCol    = document.querySelector('.middle-column');
+        const rightCol     = document.querySelector('.right-column');
+
+        function switchMobileTab(tab) {
+            // Only applies at mobile breakpoint
+            if (window.innerWidth > 900) return;
+
+            // Reset all panels and nav buttons
+            sidebar.classList.remove('mobile-active');
+            middleCol.classList.remove('mobile-active');
+            rightCol.classList.remove('mobile-active');
+            document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+
+            if (tab === 'archive') {
+                sidebar.classList.add('mobile-active');
+                document.getElementById('mnavArchive').classList.add('active');
+            } else if (tab === 'desk') {
+                middleCol.classList.add('mobile-active');
+                document.getElementById('mnavDesk').classList.add('active');
+            } else if (tab === 'report') {
+                rightCol.classList.add('mobile-active');
+                document.getElementById('mnavReport').classList.add('active');
+            }
+        }
+
+        // On mobile load: show Desk tab by default
+        function initMobileTabs() {
+            if (window.innerWidth <= 900) {
+                switchMobileTab('desk');
+            } else {
+                // Desktop: make sure all panels visible
+                sidebar.classList.remove('mobile-active');
+                middleCol.classList.remove('mobile-active');
+                rightCol.classList.remove('mobile-active');
+            }
+        }
+
+        // After a report loads on mobile, auto-switch to Report tab
+        const _origLoadReport = loadReport;
+        async function loadReport(filename, element) {
+            await _origLoadReport(filename, element);
+            if (window.innerWidth <= 900) switchMobileTab('report');
+        }
+
+        window.addEventListener('resize', initMobileTabs);
+        initMobileTabs();
 
         fetchHistory();
     </script>
