@@ -26,6 +26,10 @@ def read_process_stdout(proc):
 def index():
     return render_template('index.html')
 
+@app.route('/ping')
+def ping():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/api/run', methods=['POST'])
 def run_desk():
     global running_process
