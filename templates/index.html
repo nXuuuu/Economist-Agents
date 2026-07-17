@@ -2161,6 +2161,10 @@
 
                 // Parse and render using marked.js
                 reportEnglish.innerHTML = marked.parse(rawContent);
+
+                // On mobile: auto-switch to the Report panel after loading
+                if (window.innerWidth <= 900) switchMobileTab('report');
+
             } catch (err) {
                 console.error("Report fetch error:", err);
             }
@@ -2388,12 +2392,6 @@
             }
         }
 
-        // After a report loads on mobile, auto-switch to Report tab
-        const _origLoadReport = loadReport;
-        async function loadReport(filename, element) {
-            await _origLoadReport(filename, element);
-            if (window.innerWidth <= 900) switchMobileTab('report');
-        }
 
         window.addEventListener('resize', initMobileTabs);
         initMobileTabs();
