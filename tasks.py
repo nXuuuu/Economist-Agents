@@ -88,7 +88,7 @@ class MacroTasks:
                 1. Detail the interplay between Gold and DXY given the current regime and pricing.
                 2. Explicitly cite the FRED data: exact Unemployment Rate, CPI, and Fed Funds Rate values and dates.
                 3. Analyse the COT positioning using the ACTUAL NET NUMBERS — explain if the market is crowded or set to turn.
-                4. Forecast upcoming calendar events: predict beat/meet/miss for each, with the EXACT DATE and TIME in Cambodia Time (UTC+7).
+                4. Forecast upcoming calendar events: Predict beat/meet/miss ONLY for the unreleased high-impact US economic events provided in the Scout's data brief. Include the EXACT DATE and TIME in Cambodia Time (UTC+7). If the brief states there are no upcoming high-impact events remaining for the week, explicitly write: 'No remaining high-impact US events to forecast this week.'
                 5. Do NOT include trading entry/exit levels or stop-losses.
 
                 **OUTPUT FORMAT — two sections separated by exactly `---KHMER_SECTION---`:**

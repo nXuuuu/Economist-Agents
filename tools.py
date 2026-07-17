@@ -285,11 +285,19 @@ class MacroTools:
             if len(col) < 4:
                 col = {'event': 0, 'country': 1, 'time': 2, 'actual': 4, 'forecast': 5, 'prior': 6}
 
-            priority = {"US", "GB", "EU", "JP", "CN", "DE"}
-            report   = "Economic Calendar & Consensus Forecasts (Cambodia Time UTC+7):\n"
+            priority_us = {"US"}
+            report   = "Economic Calendar & Consensus Forecasts (Upcoming High-Impact US Events, UTC+7):\n"
             count    = 0
 
-            for row in rows[1:35]:
+            # Predefined list of US high impact event keywords
+            HIGH_IMPACT_KEYWORDS = [
+                "non-farm", "nonfarm", "unemployment rate", "unemployment claims", "jobless claims",
+                "cpi", "consumer price index", "ppi", "producer price index", "retail sales",
+                "gdp", "pce", "fomc", "fed interest", "funds rate", "ism", "consumer confidence",
+                "consumer sentiment", "fed chairman", "powell", "trump speaks", "president speaks"
+            ]
+
+            for row in rows[1:80]: # Scan a wider range of rows to ensure we get all events of the week
                 cells = row.find_all(['td', 'th'])
                 needed = max(col.values()) + 1 if col else 7
                 if len(cells) < needed:
@@ -303,16 +311,29 @@ class MacroTools:
                     prior    = cells[col.get('prior', 6)].text.strip()
                     kh_time  = to_kh_time(time_raw)
 
-                    if country in priority or count < 8:
-                        report += (
-                            f"- **{event}** ({country}) | Time: {kh_time} "
-                            f"| Actual: {actual} | Forecast: {forecast} | Prior: {prior}\n"
-                        )
-                        count += 1
+                    # Filter for high impact US events
+                    event_lower = event.lower()
+                    is_high_impact = any(kw in event_lower for kw in HIGH_IMPACT_KEYWORDS)
+                    
+                    if country in priority_us and is_high_impact:
+                        # Check if actual is already released (contains any digit)
+                        has_actual = False
+                        if actual and actual.strip() not in ("-", "", "all day"):
+                            import re
+                            if re.search(r'\d', actual):
+                                has_actual = True
+                        
+                        # Only include if not yet released (upcoming forecast needed)
+                        if not has_actual:
+                            report += (
+                                f"- **{event}** | Time: {kh_time} "
+                                f"| Forecast: {forecast} | Prior: {prior}\n"
+                            )
+                            count += 1
                 except (IndexError, AttributeError):
                     continue
 
-            return report if count > 0 else "Calendar fetched but no matching events found."
+            return report if count > 0 else "No upcoming high-impact US economic events remaining for the week."
 
         except Exception as e:
             # Fallback to search if any parsing exception occurs
