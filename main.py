@@ -24,6 +24,37 @@ def upload_to_supabase(filename, content):
         print(f"\nError uploading report to Supabase: {e}")
 
 
+def get_next_report_index():
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_KEY")
+    if not url or not key:
+        # Fallback to local files if Supabase is not configured
+        reports_dir = "reports"
+        if not os.path.exists(reports_dir):
+            return 1
+        files = [f for f in os.listdir(reports_dir) if f.startswith("macro_report_") and f.endswith(".md")]
+        indices = [int(f.split("_")[-1].replace(".md", "")) for f in files if f.split("_")[-1].replace(".md", "").isdigit()]
+        return max(indices) + 1 if indices else 1
+
+    try:
+        supabase: Client = create_client(url, key)
+        res = supabase.table('reports').select('filename').execute()
+        if res.data:
+            filenames = [row['filename'] for row in res.data]
+            indices = [int(f.split("_")[-1].replace(".md", "")) for f in filenames if f.startswith("macro_report_") and f.split("_")[-1].replace(".md", "").isdigit()]
+            return max(indices) + 1 if indices else 1
+    except Exception as e:
+        print(f"Error querying Supabase for index: {e}")
+
+    # Fallback to local files
+    reports_dir = "reports"
+    if not os.path.exists(reports_dir):
+        return 1
+    files = [f for f in os.listdir(reports_dir) if f.startswith("macro_report_") and f.endswith(".md")]
+    indices = [int(f.split("_")[-1].replace(".md", "")) for f in files if f.split("_")[-1].replace(".md", "").isdigit()]
+    return max(indices) + 1 if indices else 1
+
+
 def generate_markdown_report(result_text):
     print("\nGenerating Markdown Report...")
 
@@ -36,13 +67,9 @@ def generate_markdown_report(result_text):
     reports_dir = "reports"
     os.makedirs(reports_dir, exist_ok=True)
 
-    # Find next available incremental filename
-    i = 1
-    while True:
-        md_path = os.path.join(reports_dir, f"macro_report_{i}.md")
-        if not os.path.exists(md_path):
-            break
-        i += 1
+    # Determine correct next report index from Supabase/local
+    i = get_next_report_index()
+    md_path = os.path.join(reports_dir, f"macro_report_{i}.md")
 
     # Get current Cambodia Time (UTC+7)
     from datetime import datetime, timedelta, timezone

@@ -25,10 +25,8 @@ class MacroTasks:
         return Task(
             description=dedent(f"""\
                 Monitor specific assets: {target_assets}.
-                1. Fetch the live exchange prices for Gold (GC=F) and the US Dollar Index (DX-Y.NYB).
-                2. Fetch the latest news and narratives directly associated with these two tickers.
-
-                Compile into a clean Asset Pricing & News Brief.
+                Call the 'Gather asset prices and headlines' tool with the exact input: 'GC=F, DX-Y.NYB'.
+                Compile all findings into a clean Asset Pricing & News Brief.
                 """),
             expected_output=(
                 "A structured Asset Pricing & News Brief with exact current prices "

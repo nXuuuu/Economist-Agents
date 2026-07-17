@@ -15,11 +15,9 @@ class MacroAgents:
         return Agent(
             role='Macro Data Analyst',
             goal='Gather macroeconomic indicators, economic calendars, and global geopolitical reports.',
-            backstory='You are a junior analyst focused on systemic macroeconomic data. You pull FRED stats, Yahoo economic calendars, and Geopolitical briefs without bias.',
+            backstory='You are a junior analyst focused on systemic macroeconomic data. You pull all FRED stats, Yahoo economic calendars, and Geopolitical briefs using your unified macro tool.',
             tools=[
-                MacroTools.get_fred_data, 
-                MacroTools.get_economic_calendar,
-                MacroTools.get_geopolitical_news
+                MacroTools.gather_all_macro_fundamentals
             ],
             llm=GEMINI_MODEL,
             verbose=True,
@@ -30,10 +28,9 @@ class MacroAgents:
         return Agent(
             role='Asset Data Analyst',
             goal='Monitor price actions and specific news narratives for Gold (GC=F) and the US Dollar Index (DX-Y.NYB).',
-            backstory='You are an execution-desk analyst. You monitor exchange prices, market tick changes, and specific corporate or commodity headlines.',
+            backstory='You are an execution-desk analyst. You monitor exchange prices and headlines using your unified asset tool.',
             tools=[
-                MacroTools.get_price,
-                MacroTools.get_news
+                MacroTools.gather_asset_prices_and_headlines
             ],
             llm=GEMINI_MODEL,
             verbose=True,

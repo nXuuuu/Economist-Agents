@@ -14,17 +14,19 @@ def _http_get(url, headers=None, timeout=12, max_attempts=3):
     _headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     if headers:
         _headers.update(headers)
-    last_exc = None
     for attempt in range(max_attempts):
         try:
             resp = requests.get(url, headers=_headers, timeout=timeout)
+            # Do NOT retry on client errors (unauthorized, forbidden, bad request, not found)
+            # Only retry on server errors (5xx) or rate limits (429)
+            if resp.status_code < 500 and resp.status_code != 429:
+                return resp
             resp.raise_for_status()
             return resp
-        except Exception as exc:
-            last_exc = exc
+        except Exception:
             if attempt < max_attempts - 1:
-                time.sleep(2 ** attempt)   # 1 s → 2 s → 4 s
-    return None   # caller must handle None
+                time.sleep(1.5 ** attempt)   # shorter sleep: 1s -> 1.5s -> 2.25s
+    return None
 
 
 class MacroTools:
@@ -40,8 +42,12 @@ class MacroTools:
                 return f"No news found for {ticker}."
             summary = ""
             for item in news[:5]:
-                summary += f"- {item.get('title', '')} (Publisher: {item.get('publisher', '')})\n"
-            return summary
+                content = item.get('content', {})
+                title = content.get('title', '')
+                publisher = content.get('provider', {}).get('displayName', '')
+                if title:
+                    summary += f"- {title} (Publisher: {publisher})\n"
+            return summary if summary else f"No news found for {ticker}."
         except Exception as e:
             return f"Error fetching news for {ticker}: {str(e)}"
 
@@ -81,8 +87,8 @@ class MacroTools:
                 f"&file_type=json&sort_order=desc&limit=1"
             )
             resp = _http_get(url, timeout=10)
-            if resp is None:
-                report += f"- {name}: Unavailable after 3 attempts.\n"
+            if resp is None or resp.status_code != 200:
+                report += f"- {name}: Unavailable (API response error or timeout).\n"
                 continue
             try:
                 obs = resp.json().get("observations", [])
@@ -100,8 +106,8 @@ class MacroTools:
         """Fetch the latest geopolitical developments and reports from the Foreign Affairs RSS feed."""
         url = "https://www.foreignaffairs.com/rss.xml"
         resp = _http_get(url, timeout=12)
-        if resp is None:
-            return "Failed to fetch geopolitical news after 3 attempts."
+        if resp is None or resp.status_code != 200:
+            return "Failed to fetch geopolitical news."
         try:
             root = ET.fromstring(resp.content)
             items = root.findall(".//item")
@@ -138,17 +144,16 @@ class MacroTools:
 
         url = "https://finance.yahoo.com/calendar/economic"
         resp = _http_get(url, timeout=15)
-        if resp is None:
-            return "Economic calendar unavailable after 3 attempts."
+        if resp is None or resp.status_code != 200:
+            return "Economic calendar unavailable (Yahoo Finance fetch error or timeout)."
 
         try:
             soup = BeautifulSoup(resp.text, 'html.parser')
             table = soup.find('table')
             if not table:
-                # try alternate selectors
                 table = soup.find(attrs={"data-test": re.compile(r"calendar|economic", re.I)})
             if not table:
-                return "Economic calendar table not found on page (Yahoo Finance may have changed layout)."
+                return "Economic calendar table not found on page."
 
             rows = table.find_all('tr')
             if len(rows) <= 1:
@@ -177,16 +182,16 @@ class MacroTools:
 
             for row in rows[1:35]:
                 cells = row.find_all(['td', 'th'])
-                needed = max(col.values()) + 1
+                needed = max(col.values()) + 1 if col else 7
                 if len(cells) < needed:
                     continue
                 try:
-                    event    = cells[col['event']].text.strip()
-                    country  = cells[col['country']].text.strip()
-                    time_raw = cells[col['time']].text.strip()
-                    actual   = cells[col.get('actual',   4)].text.strip()
+                    event    = cells[col.get('event', 0)].text.strip()
+                    country  = cells[col.get('country', 1)].text.strip()
+                    time_raw = cells[col.get('time', 2)].text.strip()
+                    actual   = cells[col.get('actual', 4)].text.strip()
                     forecast = cells[col.get('forecast', 5)].text.strip()
-                    prior    = cells[col.get('prior',    6)].text.strip()
+                    prior    = cells[col.get('prior', 6)].text.strip()
                     kh_time  = to_kh_time(time_raw)
 
                     if country in priority or count < 8:
@@ -217,10 +222,10 @@ class MacroTools:
             "&$limit=2"
         )
 
-        resp = _http_get(cftc_url, timeout=15)
+        resp = _http_get(cftc_url, timeout=12)
         cftc_ok = False
 
-        if resp is not None:
+        if resp is not None and resp.status_code == 200:
             try:
                 rows = resp.json()
                 if rows:
@@ -249,7 +254,8 @@ class MacroTools:
             try:
                 gold = yf.Ticker("GC=F")
                 for item in (gold.news or [])[:4]:
-                    title = item.get('title', '')
+                    content = item.get('content', {})
+                    title = content.get('title', '')
                     if any(kw in title.lower() for kw in ['cot', 'positioning', 'flows', 'central bank', 'etf']):
                         report += f"- {title}\n"
             except Exception:
@@ -266,3 +272,50 @@ class MacroTools:
             pass
 
         return report
+
+    # ── 7. UNIFIED Macro Fundamentals Tool ──────────────────────────────────
+    @tool("Gather all macro fundamentals")
+    def gather_all_macro_fundamentals() -> str:
+        """Fetch all macroeconomic indicators from FRED, the Yahoo economic calendar, and Foreign Affairs RSS geopolitical feeds at once."""
+        report = "=== GATHERED MACRO FUNDAMENTALS ===\n\n"
+        
+        # 1. FRED
+        try:
+            report += MacroTools.get_fred_data.func() + "\n"
+        except Exception as e:
+            report += f"FRED error: {e}\n"
+            
+        # 2. Economic Calendar
+        try:
+            report += MacroTools.get_economic_calendar.func() + "\n"
+        except Exception as e:
+            report += f"Calendar error: {e}\n"
+            
+        # 3. Geopolitical
+        try:
+            report += MacroTools.get_geopolitical_news.func() + "\n"
+        except Exception as e:
+            report += f"Geopolitical news error: {e}\n"
+            
+        return report
+
+    # ── 8. UNIFIED Asset pricing & headlines Tool ────────────────────────────
+    @tool("Gather asset prices and headlines")
+    def gather_asset_prices_and_headlines(target_assets: str) -> str:
+        """Fetch market prices and news headlines for multiple target assets at once. Input is comma separated assets list, e.g. 'GC=F, DX-Y.NYB'."""
+        assets = [a.strip() for a in target_assets.split(",") if a.strip()]
+        report = "=== GATHERED ASSET PRICES & HEADLINES ===\n\n"
+        
+        for asset in assets:
+            report += f"--- {asset} ---\n"
+            try:
+                report += MacroTools.get_price.func(asset) + "\n"
+            except Exception as e:
+                report += f"Price error: {e}\n"
+            try:
+                report += MacroTools.get_news.func(asset) + "\n"
+            except Exception as e:
+                report += f"News error: {e}\n"
+                
+        return report
+
