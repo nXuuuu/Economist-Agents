@@ -44,7 +44,6 @@ class MacroTasks:
                 "upcoming economic calendar events with forecast/actual/prior columns, "
                 "and top geopolitical developments."
             ),
-            output_pydantic=MacroBrief,
             agent=agent,
             async_execution=True,   # ← runs concurrently with tasks 2 & 3
         )
@@ -62,7 +61,6 @@ class MacroTasks:
                 "A structured Asset Pricing & News Brief with exact current prices "
                 "and recent news headlines for Gold and DXY."
             ),
-            output_pydantic=AssetBrief,
             agent=agent,
             async_execution=True,   # ← runs concurrently with tasks 1 & 3
         )
@@ -82,7 +80,6 @@ class MacroTasks:
                 "A Positioning & Flows Brief with CFTC net position numbers, "
                 "GLD ETF AUM, and an overall positioning bias signal."
             ),
-            output_pydantic=FlowsBrief,
             agent=agent,
             async_execution=True,   # ← runs concurrently with tasks 1 & 2
         )
