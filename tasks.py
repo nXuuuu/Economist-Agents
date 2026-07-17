@@ -44,8 +44,22 @@ class MacroTasks:
                 "upcoming economic calendar events with forecast/actual/prior columns, "
                 "and top geopolitical developments."
             ),
+    def gather_macro_data_task(self, agent):
+        return Task(
+            description=dedent("""\
+                Gather macroeconomic and fundamental data:
+                1. Fetch the latest US indicators (CPI, rates, unemployment) from the FRED API.
+                2. Fetch the upcoming economic calendar releases and consensus forecasts.
+                3. Fetch the latest global geopolitical briefs from Foreign Affairs.
+
+                Compile all findings into a structured Macro Data Brief.
+                """),
+            expected_output=(
+                "A structured Macro Data Brief with FRED indicator values and dates, "
+                "upcoming economic calendar events with forecast/actual/prior columns, "
+                "and top geopolitical developments."
+            ),
             agent=agent,
-            async_execution=True,   # ← runs concurrently with tasks 2 & 3
         )
 
     def gather_asset_data_task(self, agent, target_assets):
@@ -62,7 +76,6 @@ class MacroTasks:
                 "and recent news headlines for Gold and DXY."
             ),
             agent=agent,
-            async_execution=True,   # ← runs concurrently with tasks 1 & 3
         )
 
     def gather_positioning_flows_task(self, agent):
@@ -81,10 +94,9 @@ class MacroTasks:
                 "GLD ETF AUM, and an overall positioning bias signal."
             ),
             agent=agent,
-            async_execution=True,   # ← runs concurrently with tasks 1 & 2
         )
 
-    def analyze_macro_regime_task(self, agent, context_tasks):
+    def analyze_macro_regime_task(self, agent):
         return Task(
             description=dedent("""\
                 Using the Macro Data Brief, Asset Brief, and Flows Brief from the context:
@@ -98,10 +110,9 @@ class MacroTasks:
                 "and monetary policy direction with implications for Gold and DXY."
             ),
             agent=agent,
-            context=context_tasks,  # waits for tasks 1, 2, 3 before starting
         )
 
-    def synthesize_and_forecast_task(self, agent, context_tasks):
+    def synthesize_and_forecast_task(self, agent):
         return Task(
             description=dedent("""\
                 Review all previous outputs from context:

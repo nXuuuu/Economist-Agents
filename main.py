@@ -44,8 +44,15 @@ def generate_markdown_report(result_text):
             break
         i += 1
 
+    # Get current Cambodia Time (UTC+7)
+    from datetime import datetime, timedelta, timezone
+    kh_tz = timezone(timedelta(hours=7))
+    now_kh = datetime.now(timezone.utc).astimezone(kh_tz)
+    timestamp_str = now_kh.strftime("%Y-%m-%d %I:%M %p")
+
     # Build full report text
-    complete_report  = "# Global Macro Analysis Report (Gold & DXY)\n\n"
+    complete_report  = "# Global Macro Analysis Report (Gold & DXY)\n"
+    complete_report += f"*Generated: {timestamp_str} (Cambodia Time UTC+7)*\n\n"
     complete_report += "## English Version\n\n"
     complete_report += english_content
     if khmer_content:
@@ -85,24 +92,14 @@ def main():
     macro_economist  = agents.macro_economist_agent()
     lead_economist   = agents.lead_asset_economist_agent()
 
-    # ── Tasks 1-3: async (run concurrently) ──────────────────────────────────
+    # ── Tasks 1-5: Sequential Execution ──────────────────────────────────────
     task1 = tasks.gather_macro_data_task(macro_analyst)
     task2 = tasks.gather_asset_data_task(asset_analyst, target_assets)
     task3 = tasks.gather_positioning_flows_task(flows_analyst)
-
-    # ── Tasks 4-5: sequential, each waiting for all upstream tasks ───────────
-    task4 = tasks.analyze_macro_regime_task(
-        macro_economist,
-        context_tasks=[task1, task2, task3]
-    )
-    task5 = tasks.synthesize_and_forecast_task(
-        lead_economist,
-        context_tasks=[task1, task2, task3, task4]
-    )
+    task4 = tasks.analyze_macro_regime_task(macro_economist)
+    task5 = tasks.synthesize_and_forecast_task(lead_economist)
 
     # ── Assemble crew ────────────────────────────────────────────────────────
-    # Tasks 1-3 carry async_execution=True; CrewAI will run them concurrently
-    # and block task 4 until all three finish via the context= dependency.
     macro_crew = Crew(
         agents=[macro_analyst, asset_analyst, flows_analyst, macro_economist, lead_economist],
         tasks=[task1, task2, task3, task4, task5],
@@ -110,8 +107,7 @@ def main():
         verbose=True,
     )
 
-    print("\nStarting the 5-Agent Macro Research Process...")
-    print("Tasks 1-3 will run CONCURRENTLY. Tasks 4-5 run after all data is gathered.\n")
+    print("\nStarting the 5-Agent Macro Research Process...\n")
 
     result = macro_crew.kickoff()
 
