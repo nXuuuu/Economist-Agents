@@ -9,8 +9,8 @@ import time
 # ─────────────────────────────────────────────────────────────────────────────
 #  Shared retry helper — wraps every HTTP call with 3 attempts + backoff
 # ─────────────────────────────────────────────────────────────────────────────
-def _http_get(url, headers=None, timeout=12, max_attempts=3):
-    """GET with exponential-backoff retry. Returns Response or None."""
+def _http_get(url, headers=None, timeout=3.5, max_attempts=2):
+    """GET with fast timeout and retry. Returns Response or None."""
     _headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     if headers:
         _headers.update(headers)
@@ -18,14 +18,13 @@ def _http_get(url, headers=None, timeout=12, max_attempts=3):
         try:
             resp = requests.get(url, headers=_headers, timeout=timeout)
             # Do NOT retry on client errors (unauthorized, forbidden, bad request, not found)
-            # Only retry on server errors (5xx) or rate limits (429)
             if resp.status_code < 500 and resp.status_code != 429:
                 return resp
             resp.raise_for_status()
             return resp
         except Exception:
             if attempt < max_attempts - 1:
-                time.sleep(1.5 ** attempt)   # shorter sleep: 1s -> 1.5s -> 2.25s
+                time.sleep(1.0)   # Sleep exactly 1s before retrying
     return None
 
 
@@ -65,39 +64,64 @@ class MacroTools:
         except Exception as e:
             return f"Error fetching price for {ticker}: {str(e)}"
 
-    # ── 3. FRED macro data (with retry) ──────────────────────────────────────
+    # ── 3. FRED macro data (with retry & search fallback) ────────────────────
+    def _search_macro_indicator_fallback(indicator_name: str) -> str:
+        """Search Yahoo for the latest US indicator value when FRED fails."""
+        from bs4 import BeautifulSoup
+        q = f"latest US {indicator_name} rate value"
+        url = f"https://search.yahoo.com/search?q={requests.utils.quote(q)}"
+        resp = _http_get(url)
+        if resp and resp.status_code == 200:
+            try:
+                soup = BeautifulSoup(resp.text, 'html.parser')
+                # Find plain text nodes
+                results = soup.find_all('div', class_=re.compile(r'algo|compText')) or soup.find_all('p')
+                for r in results[:4]:
+                    txt = r.text.strip()
+                    # Look for percentage values like '3.4%' or '5.25%'
+                    match = re.search(r'\b\d+(\.\d+)?%', txt)
+                    if match:
+                        return f"{match.group(0)} (estimated from search results)"
+            except Exception:
+                pass
+        return "Unavailable"
+
     @tool("Get key macroeconomic data from FRED")
     def get_fred_data() -> str:
         """Fetch key US macroeconomic indicators (CPI Inflation, Fed Funds Rate, and Unemployment Rate) from the Federal Reserve Economic Data (FRED) API."""
         api_key = os.environ.get("FRED_API_KEY", "")
-        if not api_key or api_key.strip() == "" or api_key == "your_fred_api_key_here":
-            return "FRED API Key is missing. Add FRED_API_KEY to your environment variables."
+        has_key = api_key and api_key.strip() != "" and api_key != "your_fred_api_key_here"
 
         indicators = {
-            "CPI (Consumer Price Index)": "CPIAUCSL",
-            "Fed Funds Effective Rate":   "FEDFUNDS",
-            "Unemployment Rate":          "UNRATE",
+            "CPI (Consumer Price Index)": ("CPIAUCSL", "inflation"),
+            "Fed Funds Effective Rate":   ("FEDFUNDS", "fed funds interest"),
+            "Unemployment Rate":          ("UNRATE", "unemployment"),
         }
 
-        report = "Latest US Macroeconomic Data (FRED):\n"
-        for name, series_id in indicators.items():
-            url = (
-                f"https://api.stlouisfed.org/fred/series/observations"
-                f"?series_id={series_id}&api_key={api_key}"
-                f"&file_type=json&sort_order=desc&limit=1"
-            )
-            resp = _http_get(url, timeout=10)
-            if resp is None or resp.status_code != 200:
-                report += f"- {name}: Unavailable (API response error or timeout).\n"
-                continue
-            try:
-                obs = resp.json().get("observations", [])
-                if obs:
-                    report += f"- {name}: {obs[0]['value']} (as of {obs[0]['date']})\n"
-                else:
-                    report += f"- {name}: No observations found.\n"
-            except Exception as e:
-                report += f"- {name}: Parse error — {e}\n"
+        report = "Latest US Macroeconomic Data:\n"
+        for name, (series_id, search_term) in indicators.items():
+            success = False
+            if has_key:
+                url = (
+                    f"https://api.stlouisfed.org/fred/series/observations"
+                    f"?series_id={series_id}&api_key={api_key}"
+                    f"&file_type=json&sort_order=desc&limit=1"
+                )
+                resp = _http_get(url)
+                if resp and resp.status_code == 200:
+                    try:
+                        obs = resp.json().get("observations", [])
+                        if obs:
+                            report += f"- {name}: {obs[0]['value']} (as of {obs[0]['date']})\n"
+                            success = True
+                    except Exception:
+                        pass
+
+            if not success:
+                # API failed or key missing — use web search fallback
+                val = MacroTools._search_macro_indicator_fallback(search_term)
+                report += f"- {name}: {val} (Web search fallback)\n"
+                
         return report
 
     # ── 4. Geopolitical news (with retry) ────────────────────────────────────
@@ -105,7 +129,7 @@ class MacroTools:
     def get_geopolitical_news() -> str:
         """Fetch the latest geopolitical developments and reports from the Foreign Affairs RSS feed."""
         url = "https://www.foreignaffairs.com/rss.xml"
-        resp = _http_get(url, timeout=12)
+        resp = _http_get(url)
         if resp is None or resp.status_code != 200:
             return "Failed to fetch geopolitical news."
         try:
@@ -143,9 +167,26 @@ class MacroTools:
             return f"{t} (UTC)"
 
         url = "https://finance.yahoo.com/calendar/economic"
-        resp = _http_get(url, timeout=15)
+        resp = _http_get(url)
+        
+        # If Yahoo is blocked/timeout, fall back to Search for upcoming economic events
         if resp is None or resp.status_code != 200:
-            return "Economic calendar unavailable (Yahoo Finance fetch error or timeout)."
+            report = "Economic Calendar & Consensus Forecasts (Web Search Fallback):\n"
+            try:
+                q = "economic calendar upcoming events this week forecast consensus prior"
+                search_url = f"https://search.yahoo.com/search?q={requests.utils.quote(q)}"
+                s_resp = _http_get(search_url)
+                if s_resp and s_resp.status_code == 200:
+                    soup = BeautifulSoup(s_resp.text, 'html.parser')
+                    results = soup.find_all('div', class_=re.compile(r'algo'))
+                    for r in results[:4]:
+                        title = r.find('h3').text.strip() if r.find('h3') else ""
+                        desc = (r.find('div', class_='compText') or r.find('p')).text.strip() if (r.find('div', class_='compText') or r.find('p')) else ""
+                        if title and desc:
+                            report += f"- **{title}**: {desc[:200]}...\n"
+                return report if len(report) > 60 else "No upcoming economic events found via search fallback."
+            except Exception as se:
+                return f"Economic calendar search fallback failed: {se}"
 
         try:
             soup = BeautifulSoup(resp.text, 'html.parser')
@@ -153,11 +194,12 @@ class MacroTools:
             if not table:
                 table = soup.find(attrs={"data-test": re.compile(r"calendar|economic", re.I)})
             if not table:
-                return "Economic calendar table not found on page."
+                # Table missing - try search fallback instead of raising error
+                raise ValueError("Economic calendar table not found on Yahoo page.")
 
             rows = table.find_all('tr')
             if len(rows) <= 1:
-                return "Economic calendar table is empty."
+                raise ValueError("Economic calendar table is empty.")
 
             # ── Auto-detect column positions from header row ──────────────
             header_cells = rows[0].find_all(['th', 'td'])
@@ -206,7 +248,23 @@ class MacroTools:
             return report if count > 0 else "Calendar fetched but no matching events found."
 
         except Exception as e:
-            return f"Error parsing economic calendar: {str(e)}"
+            # Fallback to search if any parsing exception occurs
+            report = "Economic Calendar & Consensus Forecasts (Web Search Fallback after parse error):\n"
+            try:
+                q = "economic calendar upcoming events this week forecast consensus prior"
+                search_url = f"https://search.yahoo.com/search?q={requests.utils.quote(q)}"
+                s_resp = _http_get(search_url)
+                if s_resp and s_resp.status_code == 200:
+                    soup = BeautifulSoup(s_resp.text, 'html.parser')
+                    results = soup.find_all('div', class_=re.compile(r'algo'))
+                    for r in results[:4]:
+                        title = r.find('h3').text.strip() if r.find('h3') else ""
+                        desc = (r.find('div', class_='compText') or r.find('p')).text.strip() if (r.find('div', class_='compText') or r.find('p')) else ""
+                        if title and desc:
+                            report += f"- **{title}**: {desc[:200]}...\n"
+                return report if len(report) > 60 else f"Economic calendar error: {e}"
+            except Exception:
+                return f"Error parsing economic calendar: {str(e)}"
 
     # ── 6. COT data — CFTC official API (real numbers) ───────────────────────
     @tool("Search for Commitments of Traders COT and money flows")
@@ -222,7 +280,7 @@ class MacroTools:
             "&$limit=2"
         )
 
-        resp = _http_get(cftc_url, timeout=12)
+        resp = _http_get(cftc_url)
         cftc_ok = False
 
         if resp is not None and resp.status_code == 200:
