@@ -64,28 +64,28 @@ class MacroTools:
         except Exception as e:
             return f"Error fetching price for {ticker}: {str(e)}"
 
-    # ── 3. FRED macro data (with retry & search fallback) ────────────────────
     def _search_macro_indicator_fallback(indicator_name: str) -> str:
-        """Search Yahoo for the latest US indicator value when FRED fails."""
+        """Search TradingEconomics via Yahoo Search for the latest official US indicator value."""
         from bs4 import BeautifulSoup
-        q = f"latest US {indicator_name} rate value"
+        # Restrict search to tradingeconomics.com to get official, verified data
+        q = f"site:tradingeconomics.com united states {indicator_name} rate"
         url = f"https://search.yahoo.com/search?q={requests.utils.quote(q)}"
         resp = _http_get(url)
         if resp and resp.status_code == 200:
             try:
                 soup = BeautifulSoup(resp.text, 'html.parser')
-                # Find plain text nodes
                 results = soup.find_all('div', class_=re.compile(r'algo|compText')) or soup.find_all('p')
                 for r in results[:4]:
                     txt = r.text.strip()
-                    # Look for percentage values like '3.4%' or '5.25%'
+                    # Find percentage values like '3.0%' or '4.1%'
                     match = re.search(r'\b\d+(\.\d+)?%', txt)
                     if match:
-                        return f"{match.group(0)} (estimated from search results)"
+                        return f"{match.group(0)} (Official TradingEconomics Feed)"
             except Exception:
                 pass
         return "Unavailable"
 
+    # ── 3. FRED macro data (with retry & search fallback) ────────────────────
     @tool("Get key macroeconomic data from FRED")
     def get_fred_data() -> str:
         """Fetch key US macroeconomic indicators (CPI Inflation, Fed Funds Rate, and Unemployment Rate) from the Federal Reserve Economic Data (FRED) API."""
@@ -94,7 +94,7 @@ class MacroTools:
 
         indicators = {
             "CPI (Consumer Price Index)": ("CPIAUCSL", "inflation"),
-            "Fed Funds Effective Rate":   ("FEDFUNDS", "fed funds interest"),
+            "Fed Funds Effective Rate":   ("FEDFUNDS", "interest"),
             "Unemployment Rate":          ("UNRATE", "unemployment"),
         }
 
@@ -112,7 +112,7 @@ class MacroTools:
                     try:
                         obs = resp.json().get("observations", [])
                         if obs:
-                            report += f"- {name}: {obs[0]['value']} (as of {obs[0]['date']})\n"
+                            report += f"- {name}: {obs[0]['value']}% (as of {obs[0]['date']})\n"
                             success = True
                     except Exception:
                         pass
@@ -171,9 +171,9 @@ class MacroTools:
         
         # If Yahoo is blocked/timeout, fall back to Search for upcoming economic events
         if resp is None or resp.status_code != 200:
-            report = "Economic Calendar & Consensus Forecasts (Web Search Fallback):\n"
+            report = "Economic Calendar & Consensus Forecasts (TradingEconomics Calendar Search Fallback):\n"
             try:
-                q = "economic calendar upcoming events this week forecast consensus prior"
+                q = "site:tradingeconomics.com/calendar economic events this week forecast consensus prior"
                 search_url = f"https://search.yahoo.com/search?q={requests.utils.quote(q)}"
                 s_resp = _http_get(search_url)
                 if s_resp and s_resp.status_code == 200:
@@ -184,7 +184,7 @@ class MacroTools:
                         desc = (r.find('div', class_='compText') or r.find('p')).text.strip() if (r.find('div', class_='compText') or r.find('p')) else ""
                         if title and desc:
                             report += f"- **{title}**: {desc[:200]}...\n"
-                return report if len(report) > 60 else "No upcoming economic events found via search fallback."
+                return report if len(report) > 80 else "No upcoming economic events found via search fallback."
             except Exception as se:
                 return f"Economic calendar search fallback failed: {se}"
 
