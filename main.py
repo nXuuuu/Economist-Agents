@@ -119,12 +119,17 @@ def main():
     macro_economist  = agents.macro_economist_agent()
     lead_economist   = agents.lead_asset_economist_agent()
 
+    # Get current date in Cambodia time to ground all tasks in the current year (2026+)
+    from datetime import datetime, timedelta, timezone
+    kh_tz = timezone(timedelta(hours=7))
+    current_date = datetime.now(timezone.utc).astimezone(kh_tz).strftime("%B %d, %Y")
+
     # ── Tasks 1-5: Sequential Execution ──────────────────────────────────────
-    task1 = tasks.gather_macro_data_task(macro_analyst)
-    task2 = tasks.gather_asset_data_task(asset_analyst, target_assets)
-    task3 = tasks.gather_positioning_flows_task(flows_analyst)
-    task4 = tasks.analyze_macro_regime_task(macro_economist)
-    task5 = tasks.synthesize_and_forecast_task(lead_economist)
+    task1 = tasks.gather_macro_data_task(macro_analyst, current_date)
+    task2 = tasks.gather_asset_data_task(asset_analyst, target_assets, current_date)
+    task3 = tasks.gather_positioning_flows_task(flows_analyst, current_date)
+    task4 = tasks.analyze_macro_regime_task(macro_economist, current_date)
+    task5 = tasks.synthesize_and_forecast_task(lead_economist, current_date)
 
     # ── Assemble crew ────────────────────────────────────────────────────────
     macro_crew = Crew(

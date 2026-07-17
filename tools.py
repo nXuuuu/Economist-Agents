@@ -108,19 +108,24 @@ class MacroTools:
                     f"&file_type=json&sort_order=desc&limit=1"
                 )
                 resp = _http_get(url)
-                if resp and resp.status_code == 200:
-                    try:
-                        obs = resp.json().get("observations", [])
-                        if obs:
-                            report += f"- {name}: {obs[0]['value']}% (as of {obs[0]['date']})\n"
-                            success = True
-                    except Exception:
-                        pass
+                if resp:
+                    if resp.status_code == 200:
+                        try:
+                            obs = resp.json().get("observations", [])
+                            if obs:
+                                report += f"- {name}: {obs[0]['value']}% (as of {obs[0]['date']})\n"
+                                success = True
+                        except Exception as parse_err:
+                            print(f"[FRED Diagnostics] Parse error for {name}: {parse_err}")
+                    else:
+                        print(f"[FRED Diagnostics] Error for {name}: Status {resp.status_code} — Response: {resp.text[:200]}")
+                else:
+                    print(f"[FRED Diagnostics] Timeout / Connection error for {name}")
 
             if not success:
                 # API failed or key missing — use web search fallback
                 val = MacroTools._search_macro_indicator_fallback(search_term)
-                report += f"- {name}: {val} (Web search fallback)\n"
+                report += f"- {name}: {val}\n"
                 
         return report
 
