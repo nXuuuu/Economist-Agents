@@ -162,8 +162,8 @@ def push_report_to_telegram(filename: str, complete_report: str):
     brief_text = "\n".join(exec_summary)
 
     caption = (
-        f"📊 **New Macro Analysis Report Available!**\n"
-        f"📄 File: `{filename}`\n\n"
+        f"📊 **Mr. Economist FINHUB**\n"
+        f"📄 *New Report:* `{filename}`\n\n"
         f"{brief_text[:1200]}\n\n"
         f"👇 *Choose language version to read full report:*"
     )
@@ -208,7 +208,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     msg = (
-        "🤖 **Monko Executive Macro Agent Bot**\n"
+        "📊 **Mr. Economist FINHUB**\n"
         "_Exclusive Team Intelligence Desk_\n\n"
         "📖 **Workflow 1: Read Latest Existing Report**\n"
         "• Type `/latest` → Select **[ 🇬🇧 English ]** or **[ 🇰🇭 ភាសាខ្មែរ ]**\n"
