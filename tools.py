@@ -88,17 +88,21 @@ class MacroTools:
     # ── 3. FRED macro data (with robust BLS & Treasury fallbacks) ────────────
     @tool("Get key macroeconomic data from FRED")
     def get_fred_data() -> str:
-        """Fetch key US macroeconomic indicators (CPI Inflation, Fed Funds Rate, and Unemployment Rate) from the Federal Reserve Economic Data (FRED) API, with robust key-free BLS & yfinance proxies as fallback."""
+        """Fetch key US macroeconomic indicators (CPI, Core PCE, Unemployment Rate, JOLTS Job Openings, NFP, Retail Sales, Fed Funds Rate) from FRED API, with fallback proxies."""
         api_key = os.environ.get("FRED_API_KEY", "")
         has_key = api_key and api_key.strip() != "" and api_key != "your_fred_api_key_here"
 
         indicators = {
             "CPI (Consumer Price Index)": "CPIAUCSL",
-            "Fed Funds Effective Rate":   "FEDFUNDS",
+            "Core PCE Price Index":       "PCEPILFE",
             "Unemployment Rate":          "UNRATE",
+            "JOLTS Job Openings":         "JTSJOL",
+            "Non-Farm Payrolls (NFP)":    "PAYEMS",
+            "Retail Sales":               "RSAFS",
+            "Fed Funds Effective Rate":   "FEDFUNDS",
         }
 
-        report = "Latest US Macroeconomic Data:\n"
+        report = "Latest US Macroeconomic Data (Phillips Curve & Transmission Indicators):\n"
         fred_success = False
 
         if has_key:
@@ -114,7 +118,7 @@ class MacroTools:
                     try:
                         obs = resp.json().get("observations", [])
                         if obs:
-                            report += f"- {name}: {obs[0]['value']}% (as of {obs[0]['date']})\n"
+                            report += f"- {name}: {obs[0]['value']} (as of {obs[0]['date']})\n"
                         else:
                             fred_success = False
                     except Exception:
@@ -168,6 +172,7 @@ class MacroTools:
                                     cpi_data[(y, p)] = float(v_str)
                                 except ValueError:
                                     continue
+
                     # Calculate YoY CPI Inflation
                     sorted_keys = sorted(cpi_data.keys(), reverse=True)
                     if sorted_keys:
@@ -188,6 +193,7 @@ class MacroTools:
             report += f"- CPI (Consumer Price Index): {bls_cpi}\n"
             report += f"- Fed Funds Effective Rate: {fed_val} (3-Month T-Bill yield proxy)\n"
             report += f"- Unemployment Rate: {bls_unemp}\n"
+            report += f"- JOLTS / NFP / Retail Sales / PCE: Tracked via Economic Calendar\n"
 
         return report
 

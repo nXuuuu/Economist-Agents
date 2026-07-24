@@ -14,8 +14,8 @@ class MacroAgents:
     def macro_analyst_agent(self):
         return Agent(
             role='Macro Data Analyst',
-            goal='Gather macroeconomic indicators, economic calendars, and global geopolitical reports.',
-            backstory='You are a junior analyst focused on systemic macroeconomic data. You pull all FRED stats, Yahoo economic calendars, and Geopolitical briefs using your unified macro tool.',
+            goal='Gather macroeconomic indicators (PMI, JOLTS, NFP, Retail Sales, CPI/PCE, Fed Funds Rate), economic calendars, and global geopolitical reports.',
+            backstory='You are a junior analyst focused on systemic macroeconomic data. You pull all FRED indicator series, BLS stats, Yahoo economic calendars, and Geopolitical briefs using your unified macro tool.',
             tools=[
                 MacroTools.gather_all_macro_fundamentals
             ],
@@ -53,8 +53,12 @@ class MacroAgents:
     def macro_economist_agent(self):
         return Agent(
             role='Chief Macro Economist',
-            goal='Analyze interest rate cycles, inflation pressures, and geopolitical tensions to define the overarching market regime.',
-            backstory='You are a senior economist. You look at global monetary policies, credit cycles, and trade geopolitics to define if we are in stagflation, recession, growth, or recovery.',
+            goal='Analyze Phillips Curve dynamics (labor slack vs inflation), rate cycles, and the 6-step indicator transmission sequence to define the overarching market regime.',
+            backstory=(
+                'You are a senior macro economist trained in Phillips Curve theory (pi = pi_e - beta*(u - u_n) + v) and macroeconomic transmission chains. '
+                'You evaluate how early business activity (PMI) and labor demand (JOLTS) lead payrolls (NFP) and consumer demand (Retail Sales), '
+                'and how labor market tightness impacts inflation (CPI/PCE) and Federal Reserve interest rate policy.'
+            ),
             llm=GEMINI_MODEL,
             verbose=True,
             allow_delegation=False
@@ -63,8 +67,12 @@ class MacroAgents:
     def lead_asset_economist_agent(self):
         return Agent(
             role='Lead Asset Economist & Synthesizer',
-            goal='Merge macro regimes with positioning flows and price actions to detail the Gold-Dollar relationship and forecast upcoming economic data directions.',
-            backstory='You are the Lead Synthesizer. You read both the fundamental regime and the positioning flows. You detail how these forces play out on Gold and DXY, forecast the upcoming calendar events, and build the final report in English and Khmer.',
+            goal='Merge Phillips Curve regime analysis with positioning flows and price actions to detail the Gold-Dollar relationship and forecast upcoming economic data directions.',
+            backstory=(
+                'You are the Lead Synthesizer. You connect fundamental transmission chains (PMI -> JOLTS -> NFP -> Retail Sales -> CPI/PCE -> Interest Rates) '
+                'with institutional positioning flows. You detail how these macro forces drive Gold (GC=F) and DXY (DX-Y.NYB), forecast upcoming calendar events, '
+                'and build the final bilingual executive report in English and Khmer.'
+            ),
             llm=GEMINI_MODEL,
             verbose=True,
             allow_delegation=False
