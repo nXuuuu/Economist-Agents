@@ -392,6 +392,63 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     thread.start()
 
 
+# ── Webhook Registration & Processing ───────────────────────────────────────
+def setup_webhook(host_url: str):
+    """Register Webhook URL with Telegram API for on-demand cold starts."""
+    if not BOT_TOKEN or not host_url:
+        return
+    clean_host = host_url.strip().rstrip('/')
+    webhook_url = f"{clean_host}/telegram/webhook"
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/setWebhook?url={webhook_url}"
+    try:
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            logger.info(f"Registered Telegram Webhook: {webhook_url}")
+        else:
+            logger.error(f"Failed to register Webhook: {resp.text}")
+    except Exception as e:
+        logger.error(f"Error setting Webhook: {e}")
+
+
+_telegram_app = None
+
+def get_telegram_application():
+    global _telegram_app
+    if _telegram_app is None:
+        if not BOT_TOKEN:
+            return None
+        _telegram_app = Application.builder().token(BOT_TOKEN).build()
+        _telegram_app.add_handler(CommandHandler(["start", "help"], start_command))
+        _telegram_app.add_handler(CommandHandler("latest", latest_command))
+        _telegram_app.add_handler(CommandHandler(["english", "report_en"], english_command))
+        _telegram_app.add_handler(CommandHandler(["khmer", "report_kh"], khmer_command))
+        _telegram_app.add_handler(CommandHandler("run", run_command))
+        _telegram_app.add_handler(CallbackQueryHandler(button_callback))
+    return _telegram_app
+
+
+async def process_webhook_update_async(update_dict: dict):
+    app = get_telegram_application()
+    if not app:
+        return
+    if not getattr(app, '_initialized', False):
+        await app.initialize()
+        await app.start()
+    update = Update.de_json(update_dict, app.bot)
+    await app.process_update(update)
+
+
+def process_webhook_update(update_dict: dict):
+    """Process incoming JSON payload from Flask /telegram/webhook POST request."""
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(process_webhook_update_async(update_dict))
+        loop.close()
+    except Exception as e:
+        logger.error(f"Error processing webhook update: {e}")
+
+
 # ── Main Bot Runner ───────────────────────────────────────────────────────────
 def main():
     if not BOT_TOKEN:
@@ -420,4 +477,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

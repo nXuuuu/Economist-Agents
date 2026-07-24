@@ -134,18 +134,38 @@ def get_report(filename):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/telegram/webhook', methods=['POST'])
+def telegram_webhook():
+    """Receive and process incoming POST requests from Telegram to wake up Render on-demand."""
+    try:
+        from flask import request
+        data = request.get_json(force=True)
+        if data:
+            import telegram_bot
+            threading.Thread(target=telegram_bot.process_webhook_update, args=(data,), daemon=True).start()
+        return jsonify({"status": "ok"}), 200
+    except Exception as e:
+        print(f"Telegram webhook error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 def start_background_telegram_bot():
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     if token:
         try:
             import telegram_bot
-            t = threading.Thread(target=telegram_bot.main, daemon=True)
-            t.start()
-            print("Telegram Bot worker started in background thread.")
+            render_url = os.environ.get("RENDER_EXTERNAL_URL") or os.environ.get("WEBHOOK_URL")
+            if render_url:
+                print(f"Render production environment detected: Setting up Telegram Webhook ({render_url})...")
+                telegram_bot.setup_webhook(render_url)
+            else:
+                print("Local environment detected: Starting Telegram Bot long polling worker...")
+                t = threading.Thread(target=telegram_bot.main, daemon=True)
+                t.start()
         except Exception as e:
-            print(f"Failed to start background Telegram bot: {e}")
+            print(f"Failed to start Telegram bot: {e}")
 
-# Automatically launch Telegram Bot worker if configured
+# Automatically launch Telegram Bot / Webhook if configured
 start_background_telegram_bot()
 
 if __name__ == '__main__':
