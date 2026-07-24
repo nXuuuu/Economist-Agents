@@ -365,13 +365,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "<i>Exclusive Executive Macro Intelligence Desk</i>\n"
         "──────────────────────────────\n\n"
         "📖 <b>WORKFLOW 1: READ LATEST ANALYSIS</b>\n"
-        "• Type <code>/latest</code> → Select <b>[ 🇬🇧 English ]</b> or <b>[ 🇰🇭 ភាសាខ្មែរ ]</b>\n"
-        "• Or type directly: <code>/english</code> or <code>/khmer</code>\n\n"
+        "• Type /latest → Select <b>[ 🇬🇧 English ]</b> or <b>[ 🇰🇭 ភាសាខ្មែរ ]</b>\n"
+        "• Or type directly: /english or /khmer\n\n"
         "🚀 <b>WORKFLOW 2: LIVE 5-AGENT RESEARCH RUN</b>\n"
-        "• Type <code>/run</code> → Triggers live 5-agent research (~2-3 mins)\n"
-        "• The bot will automatically post the fresh report card here with language buttons!\n\n"
-        "──────────────────────────────\n"
-        "💡 <i>Tip: Tap any blue command above to execute instantly!</i>"
+        "• Type /run → Triggers live 5-agent research (~2-3 mins)\n"
+        "• The bot will automatically post the fresh report card here with language buttons!"
     )
     await update.message.reply_text(msg, parse_mode="HTML")
 
