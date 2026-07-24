@@ -85,10 +85,10 @@ class MacroTools:
                 pass
         return "Unavailable"
 
-    # ── 3. FRED macro data (with robust BLS & Treasury fallbacks) ────────────
+    # ── 3. FRED macro data (with robust direct CSV fallbacks) ────────────────
     @tool("Get key macroeconomic data from FRED")
     def get_fred_data() -> str:
-        """Fetch key US macroeconomic indicators (CPI, Core PCE, Unemployment Rate, JOLTS Job Openings, NFP, Retail Sales, Fed Funds Rate) from FRED API, with fallback proxies."""
+        """Fetch key US macroeconomic indicators (CPI, Core PCE, Unemployment Rate, JOLTS Job Openings, NFP, Retail Sales, Fed Funds Rate) from FRED API, with direct CSV fallback."""
         api_key = os.environ.get("FRED_API_KEY", "")
         has_key = api_key and api_key.strip() != "" and api_key != "your_fred_api_key_here"
 
@@ -103,10 +103,9 @@ class MacroTools:
         }
 
         report = "Latest US Macroeconomic Data (Phillips Curve & Transmission Indicators):\n"
-        fred_success = False
+        fetched_count = 0
 
         if has_key:
-            fred_success = True
             for name, series_id in indicators.items():
                 url = (
                     f"https://api.stlouisfed.org/fred/series/observations"
@@ -117,85 +116,96 @@ class MacroTools:
                 if resp and resp.status_code == 200:
                     try:
                         obs = resp.json().get("observations", [])
-                        if obs:
+                        if obs and obs[0]['value'] != ".":
                             report += f"- {name}: {obs[0]['value']} (as of {obs[0]['date']})\n"
-                        else:
-                            fred_success = False
+                            fetched_count += 1
                     except Exception:
-                        fred_success = False
+                        pass
+
+        # If API key missing or incomplete data, fetch directly via public FRED CSV endpoints
+        if fetched_count < len(indicators):
+            print("[FRED Diagnostics] Invoking direct public FRED CSV fallbacks for complete data...")
+            report = "Latest US Macroeconomic Data (Direct FRED Public Feed):\n"
+            for name, series_id in indicators.items():
+                csv_url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+                resp = _http_get(csv_url)
+                if resp and resp.status_code == 200:
+                    try:
+                        lines = [l.strip() for l in resp.text.split("\n") if l.strip()]
+                        valid_val, valid_date = "", ""
+                        for line in reversed(lines):
+                            parts = line.split(",")
+                            if len(parts) == 2 and parts[1] != "." and parts[0] not in ("observation_date", "DATE"):
+                                valid_val, valid_date = parts[1], parts[0]
+                                break
+                        if valid_val:
+                            # Standardize unit formatting
+                            if series_id == "UNRATE":
+                                val_str = f"{valid_val}%"
+                            elif series_id == "CPIAUCSL":
+                                val_str = f"{valid_val} index"
+                            elif series_id == "JTSJOL":
+                                val_str = f"{valid_val}k job openings"
+                            elif series_id == "PAYEMS":
+                                val_str = f"{valid_val}k payrolls"
+                            elif series_id == "RSAFS":
+                                val_str = f"${valid_val}M"
+                            elif series_id == "FEDFUNDS":
+                                val_str = f"{valid_val}%"
+                            else:
+                                val_str = valid_val
+                            report += f"- {name}: {val_str} (as of {valid_date})\n"
+                    except Exception as e:
+                        report += f"- {name}: Tracked via Economic Calendar ({e})\n"
                 else:
-                    if resp:
-                        print(f"[FRED Diagnostics] Error for {name}: Status {resp.status_code}")
-                    else:
-                        print(f"[FRED Diagnostics] Timeout / Connection error for {name}")
-                    fred_success = False
-
-        if not fred_success:
-            print("[FRED Diagnostics] FRED API key missing or requests blocked. Invoking BLS & Treasury proxies...")
-            # 1. Fetch Fed Funds Rate Proxy (^IRX yield) from Yahoo Finance
-            fed_val = "Unavailable"
-            try:
-                ticker = yf.Ticker("^IRX")
-                hist = ticker.history(period="1d")
-                if not hist.empty:
-                    fed_val = f"{hist['Close'].iloc[-1]:.2f}%"
-            except Exception as e:
-                print(f"[FRED Diagnostics] Treasury proxy error: {e}")
-
-            # 2. Fetch Unemployment & CPI from Bureau of Labor Statistics API v1 (key-free)
-            bls_unemp = "Unavailable"
-            bls_cpi = "Unavailable"
-            try:
-                bls_url = "https://api.bls.gov/publicAPI/v1/timeseries/data/"
-                payload = {
-                    "seriesid": ["LNS14000000", "CUUR0000SA0"],
-                    "startyear": "2025",
-                    "endyear": "2026"
-                }
-                resp = requests.post(bls_url, json=payload, headers={"Content-type": "application/json"}, timeout=5)
-                if resp.status_code == 200:
-                    results = resp.json().get("Results", {}).get("series", [])
-                    cpi_data = {}
-                    for s in results:
-                        sid = s.get("seriesID")
-                        s_data = s.get("data", [])
-                        if not s_data:
-                            continue
-                        if sid == "LNS14000000": # Unemployment
-                            bls_unemp = f"{s_data[0].get('value')}% (as of {s_data[0].get('periodName')} {s_data[0].get('year')})"
-                        elif sid == "CUUR0000SA0": # CPI Index Level
-                            for item in s_data:
-                                y = item.get("year")
-                                p = item.get("period")
-                                v_str = item.get("value", "").strip()
-                                try:
-                                    cpi_data[(y, p)] = float(v_str)
-                                except ValueError:
-                                    continue
-
-                    # Calculate YoY CPI Inflation
-                    sorted_keys = sorted(cpi_data.keys(), reverse=True)
-                    if sorted_keys:
-                        latest_k = sorted_keys[0]
-                        latest_v = cpi_data[latest_k]
-                        prior_y = str(int(latest_k[0]) - 1)
-                        prior_k = (prior_y, latest_k[1])
-                        if prior_k in cpi_data:
-                            yoy_pct = (latest_v - cpi_data[prior_k]) / cpi_data[prior_k] * 100
-                            import calendar
-                            month_name = calendar.month_name[int(latest_k[1][1:])]
-                            bls_cpi = f"{yoy_pct:.2f}% (YoY as of {month_name} {latest_k[0]})"
-            except Exception as e:
-                print(f"[FRED Diagnostics] BLS API proxy error: {e}")
-
-            # Append the proxy/fallback values
-            report = "Latest US Macroeconomic Data (BLS & Treasury Proxy):\n"
-            report += f"- CPI (Consumer Price Index): {bls_cpi}\n"
-            report += f"- Fed Funds Effective Rate: {fed_val} (3-Month T-Bill yield proxy)\n"
-            report += f"- Unemployment Rate: {bls_unemp}\n"
-            report += f"- JOLTS / NFP / Retail Sales / PCE: Tracked via Economic Calendar\n"
+                    report += f"- {name}: Tracked via Economic Calendar\n"
 
         return report
+
+    # ── 3.5. ForexFactory Economic Calendar Data ─────────────────────────────
+    @tool("Get live U.S. Economic Calendar & Event Forecasts from ForexFactory")
+    def get_forexfactory_calendar() -> str:
+        """Scrape live U.S. economic calendar events, forecasts, previous values, and actual releases from ForexFactory."""
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
+        try:
+            r = requests.get('https://www.forexfactory.com/calendar', headers=headers, timeout=10)
+            if r.status_code != 200:
+                return "ForexFactory calendar currently unavailable."
+            
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(r.text, 'html.parser')
+            rows = soup.find_all('tr', class_=lambda c: c and 'calendar__row' in c)
+            
+            events = []
+            for row in rows:
+                currency_td = row.find('td', class_='calendar__currency')
+                if not currency_td or currency_td.text.strip() != 'USD':
+                    continue
+                
+                event_td = row.find('td', class_='calendar__event')
+                event_name = event_td.text.strip() if event_td else ''
+                
+                actual_td = row.find('td', class_='calendar__actual')
+                actual = actual_td.text.strip() if actual_td else '-'
+                
+                forecast_td = row.find('td', class_='calendar__forecast')
+                forecast = forecast_td.text.strip() if forecast_td else '-'
+                
+                previous_td = row.find('td', class_='calendar__previous')
+                previous = previous_td.text.strip() if previous_td else '-'
+                
+                if event_name:
+                    events.append(f"- {event_name}: Actual: {actual} | Forecast: {forecast} | Previous: {previous}")
+            
+            if events:
+                return "Live U.S. High-Impact Events & Forecasts (ForexFactory):\n" + "\n".join(events[:12])
+            return "No upcoming U.S. economic events found on ForexFactory calendar."
+        except Exception as e:
+            return f"ForexFactory scraper error: {e}"
+
 
     # ── 4. Geopolitical news (with retry) ────────────────────────────────────
     @tool("Get recent global geopolitical news")
@@ -428,7 +438,7 @@ class MacroTools:
     # ── 7. UNIFIED Macro Fundamentals Tool ──────────────────────────────────
     @tool("Gather all macro fundamentals")
     def gather_all_macro_fundamentals() -> str:
-        """Fetch all macroeconomic indicators from FRED, the Yahoo economic calendar, and Foreign Affairs RSS geopolitical feeds at once."""
+        """Fetch all macroeconomic indicators from FRED, ForexFactory calendar, Yahoo economic calendar, and Foreign Affairs RSS geopolitical feeds at once."""
         report = "=== GATHERED MACRO FUNDAMENTALS ===\n\n"
         
         # 1. FRED
@@ -436,20 +446,27 @@ class MacroTools:
             report += MacroTools.get_fred_data.func() + "\n"
         except Exception as e:
             report += f"FRED error: {e}\n"
+
+        # 2. ForexFactory Calendar
+        try:
+            report += MacroTools.get_forexfactory_calendar.func() + "\n"
+        except Exception as e:
+            report += f"ForexFactory error: {e}\n"
             
-        # 2. Economic Calendar
+        # 3. Yahoo Economic Calendar
         try:
             report += MacroTools.get_economic_calendar.func() + "\n"
         except Exception as e:
             report += f"Calendar error: {e}\n"
             
-        # 3. Geopolitical
+        # 4. Geopolitical
         try:
             report += MacroTools.get_geopolitical_news.func() + "\n"
         except Exception as e:
             report += f"Geopolitical news error: {e}\n"
             
         return report
+
 
     # ── 8. UNIFIED Asset pricing & headlines Tool ────────────────────────────
     @tool("Gather asset prices and headlines")

@@ -469,11 +469,6 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             import main as macro_main
             macro_main.main()
-
-            # Push completion notification directly to caller chat & topic
-            filename, content = get_latest_report_content()
-            if content:
-                push_report_to_telegram(filename, content, target_chat_id=chat_id, target_topic_id=thread_id)
         except Exception as e:
             logger.error(f"Error running macro main: {e}")
             send_long_message_sync(
@@ -485,6 +480,7 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     thread = threading.Thread(target=execute_desk)
     thread.daemon = True
     thread.start()
+
 
 
 # ── Webhook Registration & Processing ───────────────────────────────────────
