@@ -209,12 +209,14 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
         "🤖 **Monko Executive Macro Agent Bot**\n"
-        "Exclusive Team Intelligence Desk\n\n"
-        "**Available Commands:**\n"
-        "• `/latest` - Select language and fetch the newest report\n"
-        "• `/english` - Fetch the latest English macro report\n"
-        "• `/khmer` - Fetch the latest Khmer (ភាសាខ្មែរ) macro report\n"
-        "• `/run` - Trigger a live 5-agent research run on demand\n"
+        "_Exclusive Team Intelligence Desk_\n\n"
+        "📖 **Workflow 1: Read Latest Existing Report**\n"
+        "• Type `/latest` → Select **[ 🇬🇧 English ]** or **[ 🇰🇭 ភាសាខ្មែរ ]**\n"
+        "• Or type directly: `/english` or `/khmer`\n\n"
+        "🚀 **Workflow 2: Run New Live Analysis**\n"
+        "• Type `/run` → Triggers live 5-agent research (~2-3 mins)\n"
+        "• The bot will automatically post the fresh report here with language buttons!\n\n"
+        "💡 _Tip: Tap any command above to execute instantly!_"
     )
     await update.message.reply_text(msg, parse_mode="Markdown")
 
