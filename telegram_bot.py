@@ -361,15 +361,17 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     msg = (
-        "<b>📊 Mr. Economist FINHUB</b>\n"
-        "<i>Exclusive Team Intelligence Desk</i>\n\n"
-        "📖 <b>Workflow 1: Read Latest Existing Report</b>\n"
+        "<b>📊 MR. ECONOMIST FINHUB</b>\n"
+        "<i>Exclusive Executive Macro Intelligence Desk</i>\n"
+        "──────────────────────────────\n\n"
+        "📖 <b>WORKFLOW 1: READ LATEST ANALYSIS</b>\n"
         "• Type <code>/latest</code> → Select <b>[ 🇬🇧 English ]</b> or <b>[ 🇰🇭 ភាសាខ្មែរ ]</b>\n"
         "• Or type directly: <code>/english</code> or <code>/khmer</code>\n\n"
-        "🚀 <b>Workflow 2: Run New Live Analysis</b>\n"
+        "🚀 <b>WORKFLOW 2: LIVE 5-AGENT RESEARCH RUN</b>\n"
         "• Type <code>/run</code> → Triggers live 5-agent research (~2-3 mins)\n"
-        "• The bot will automatically post the fresh report here with language buttons!\n\n"
-        "💡 <i>Tip: Tap any command above to execute instantly!</i>"
+        "• The bot will automatically post the fresh report card here with language buttons!\n\n"
+        "──────────────────────────────\n"
+        "💡 <i>Tip: Tap any blue command above to execute instantly!</i>"
     )
     await update.message.reply_text(msg, parse_mode="HTML")
 
@@ -381,7 +383,7 @@ async def latest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     filename, content = get_latest_report_content()
     if not content:
-        await update.message.reply_text("⚠️ No macro reports found in system yet.")
+        await update.message.reply_text("⚠️ <b>No macro reports found in system yet.</b>", parse_mode="HTML")
         return
 
     keyboard = InlineKeyboardMarkup([
@@ -393,11 +395,13 @@ async def latest_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("📜 Full Dual-Language", callback_data="report_full")
         ]
     ])
-    await update.message.reply_text(
-        f"<b>📊 Latest Report:</b> <code>{html.escape(filename)}</code>\n🌐 Please select language:",
-        reply_markup=keyboard,
-        parse_mode="HTML"
+    msg = (
+        "<b>📊 MR. ECONOMIST FINHUB</b>\n"
+        f"<b>📄 Latest Reference:</b> <code>{html.escape(filename)}</code>\n"
+        "──────────────────────────────\n\n"
+        "🌐 <b>Select language version to read:</b>"
     )
+    await update.message.reply_text(msg, reply_markup=keyboard, parse_mode="HTML")
 
 
 async def english_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -407,11 +411,16 @@ async def english_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     filename, content = get_latest_report_content()
     if not content:
-        await update.message.reply_text("⚠️ No macro reports found in system yet.")
+        await update.message.reply_text("⚠️ <b>No macro reports found in system yet.</b>", parse_mode="HTML")
         return
 
     english_text = extract_english(content)
-    await reply_chunks(update, f"<b>🇬🇧 English Macro Analysis ({html.escape(filename)})</b>\n\n{english_text}")
+    header = (
+        "<b>🇬🇧 ENGLISH MACRO ANALYSIS</b>\n"
+        f"<b>📄 Reference:</b> <code>{html.escape(filename)}</code>\n"
+        "──────────────────────────────\n\n"
+    )
+    await reply_chunks(update, f"{header}{english_text}")
 
 
 async def khmer_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -421,11 +430,16 @@ async def khmer_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     filename, content = get_latest_report_content()
     if not content:
-        await update.message.reply_text("⚠️ No macro reports found in system yet.")
+        await update.message.reply_text("⚠️ <b>No macro reports found in system yet.</b>", parse_mode="HTML")
         return
 
     khmer_text = extract_khmer(content)
-    await reply_chunks(update, f"<b>🇰🇭 របាយការណ៍វិភាគម៉ាក្រូសេដ្ឋកិច្ច ({html.escape(filename)})</b>\n\n{khmer_text}")
+    header = (
+        "<b>🇰🇭 របាយការណ៍វិភាគម៉ាក្រូសេដ្ឋកិច្ច (ភាសាខ្មែរ)</b>\n"
+        f"<b>📄 Reference:</b> <code>{html.escape(filename)}</code>\n"
+        "──────────────────────────────\n\n"
+    )
+    await reply_chunks(update, f"{header}{khmer_text}")
 
 
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -439,19 +453,34 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     filename, content = get_latest_report_content()
     if not content:
-        await query.message.reply_text("⚠️ No macro reports found in system yet.")
+        await query.message.reply_text("⚠️ <b>No macro reports found in system yet.</b>", parse_mode="HTML")
         return
 
     data = query.data
     if data == "report_en":
         eng = extract_english(content)
-        await reply_chunks(update, f"<b>🇬🇧 English Macro Analysis ({html.escape(filename)})</b>\n\n{eng}")
+        header = (
+            "<b>🇬🇧 ENGLISH MACRO ANALYSIS</b>\n"
+            f"<b>📄 Reference:</b> <code>{html.escape(filename)}</code>\n"
+            "──────────────────────────────\n\n"
+        )
+        await reply_chunks(update, f"{header}{eng}")
     elif data == "report_kh":
         khm = extract_khmer(content)
-        await reply_chunks(update, f"<b>🇰🇭 របាយការណ៍វិភាគម៉ាក្រូសេដ្ឋកិច្ច ({html.escape(filename)})</b>\n\n{khm}")
+        header = (
+            "<b>🇰🇭 របាយការណ៍វិភាគម៉ាក្រូសេដ្ឋកិច្ច (ភាសាខ្មែរ)</b>\n"
+            f"<b>📄 Reference:</b> <code>{html.escape(filename)}</code>\n"
+            "──────────────────────────────\n\n"
+        )
+        await reply_chunks(update, f"{header}{khm}")
     elif data == "report_full":
         full_formatted = clean_markdown_for_telegram_html(content)
-        await reply_chunks(update, f"<b>📜 Full Macro Report ({html.escape(filename)})</b>\n\n{full_formatted}")
+        header = (
+            "<b>📜 FULL DUAL-LANGUAGE REPORT</b>\n"
+            f"<b>📄 Reference:</b> <code>{html.escape(filename)}</code>\n"
+            "──────────────────────────────\n\n"
+        )
+        await reply_chunks(update, f"{header}{full_formatted}")
 
 
 async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -463,7 +492,16 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message or (update.callback_query.message if update.callback_query else None)
     thread_id = str(getattr(message, 'message_thread_id', '')) if message and getattr(message, 'message_thread_id', None) is not None else TOPIC_ID
 
-    await update.message.reply_text("🚀 <b>Starting 5-Agent Macro Research Desk...</b>\nYou will be notified here once the report is generated!", parse_mode="HTML")
+    msg = (
+        "<b>🚀 STARTING 5-AGENT MACRO RESEARCH DESK...</b>\n"
+        "──────────────────────────────\n"
+        "• Pulling live FRED economic series...\n"
+        "• Scraping ForexFactory calendar & forecasts...\n"
+        "• Fetching CFTC COT institutional positioning...\n"
+        "• Analyzing Gold (GC=F) & DXY price action...\n\n"
+        "⏳ <i>Estimated time: ~2-3 minutes. You will be notified here automatically!</i>"
+    )
+    await update.message.reply_text(msg, parse_mode="HTML")
 
     def execute_desk():
         try:
@@ -480,6 +518,7 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     thread = threading.Thread(target=execute_desk)
     thread.daemon = True
     thread.start()
+
 
 
 
