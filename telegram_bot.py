@@ -321,9 +321,14 @@ def main():
     if not BOT_TOKEN:
         print("Error: TELEGRAM_BOT_TOKEN environment variable is not set in .env.")
         print("Please configure TELEGRAM_BOT_TOKEN and TELEGRAM_ALLOWED_CHAT_ID.")
-        sys.exit(1)
+        return
 
     print(f"Starting Telegram Bot... (Authorized Chat: {ALLOWED_CHAT_ID or 'ALL'}, Topic: {TOPIC_ID or 'ANY'})")
+    
+    # Create dedicated event loop for background thread execution
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     app = Application.builder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler(["start", "help"], start_command))
@@ -333,8 +338,10 @@ def main():
     app.add_handler(CommandHandler("run", run_command))
     app.add_handler(CallbackQueryHandler(button_callback))
 
-    app.run_polling()
+    # Disable signal handling so polling works inside secondary/daemon Gunicorn threads
+    app.run_polling(stop_signals=None)
 
 
 if __name__ == "__main__":
     main()
+
