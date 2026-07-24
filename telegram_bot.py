@@ -522,6 +522,25 @@ def get_telegram_application():
     return _telegram_app
 
 
+_webhook_loop = None
+_webhook_thread = None
+_loop_lock = threading.Lock()
+
+
+def get_webhook_event_loop():
+    """Get or create persistent background event loop for Webhook execution."""
+    global _webhook_loop, _webhook_thread
+    with _loop_lock:
+        if _webhook_loop is None or _webhook_loop.is_closed():
+            _webhook_loop = asyncio.new_event_loop()
+            def start_loop(loop):
+                asyncio.set_event_loop(loop)
+                loop.run_forever()
+            _webhook_thread = threading.Thread(target=start_loop, args=(_webhook_loop,), daemon=True)
+            _webhook_thread.start()
+    return _webhook_loop
+
+
 async def process_webhook_update_async(update_dict: dict):
     app = get_telegram_application()
     if not app:
@@ -534,14 +553,13 @@ async def process_webhook_update_async(update_dict: dict):
 
 
 def process_webhook_update(update_dict: dict):
-    """Process incoming JSON payload from Flask /telegram/webhook POST request."""
+    """Process incoming JSON payload from Flask /telegram/webhook POST request on persistent event loop."""
     try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(process_webhook_update_async(update_dict))
-        loop.close()
+        loop = get_webhook_event_loop()
+        asyncio.run_coroutine_threadsafe(process_webhook_update_async(update_dict), loop)
     except Exception as e:
         logger.error(f"Error processing webhook update: {e}")
+
 
 
 # ── Main Bot Runner ───────────────────────────────────────────────────────────
