@@ -11,6 +11,7 @@ import asyncio
 import subprocess
 import threading
 import requests
+import re
 from dotenv import load_dotenv
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -44,7 +45,7 @@ def is_authorized(update: Update) -> bool:
         return True
 
     effective_chat = update.effective_chat
-    if not effective_chat or str(effective_chat.id) != ALLOWED_CHAT_ID:
+    if not effective_chat or str(effective_chat.id).strip() != ALLOWED_CHAT_ID:
         logger.warning(f"Unauthorized chat attempt from ID: {effective_chat.id if effective_chat else 'Unknown'}")
         return False
 
@@ -52,7 +53,7 @@ def is_authorized(update: Update) -> bool:
         message = update.message or (update.callback_query.message if update.callback_query else None)
         if message:
             thread_id = getattr(message, 'message_thread_id', None)
-            if thread_id is not None and str(thread_id) != TOPIC_ID:
+            if thread_id is not None and str(thread_id).strip() != TOPIC_ID:
                 logger.warning(f"Unauthorized topic attempt from Thread ID: {thread_id} (Expected: {TOPIC_ID})")
                 return False
     return True
@@ -172,7 +173,7 @@ def extract_khmer(content: str) -> str:
 # ── Helper: Safe Telegram Message Chunking ───────────────────────────────────
 def send_long_message_sync(chat_id: str, text: str, topic_id: str = None):
     """Send long markdown text via Telegram HTTP API, splitting into <= 4000 char chunks."""
-    if not BOT_TOKEN:
+    if not BOT_TOKEN or not chat_id:
         return
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     
@@ -187,7 +188,10 @@ def send_long_message_sync(chat_id: str, text: str, topic_id: str = None):
             "disable_web_page_preview": True
         }
         if topic_id:
-            payload["message_thread_id"] = int(topic_id)
+            try:
+                payload["message_thread_id"] = int(topic_id)
+            except ValueError:
+                pass
         try:
             res = requests.post(url, json=payload, timeout=10)
             if res.status_code != 200:
@@ -215,10 +219,13 @@ async def reply_chunks(update: Update, text: str):
 
 
 # ── Direct Push Notification ──────────────────────────────────────────────────
-def push_report_to_telegram(filename: str, complete_report: str):
+def push_report_to_telegram(filename: str, complete_report: str, target_chat_id: str = None, target_topic_id: str = None):
     """Push newly generated report notification to Telegram with language buttons."""
-    if not BOT_TOKEN or not ALLOWED_CHAT_ID:
-        logger.info("Telegram notification skipped (BOT_TOKEN or ALLOWED_CHAT_ID missing).")
+    chat_id = target_chat_id or ALLOWED_CHAT_ID
+    topic_id = target_topic_id or TOPIC_ID
+
+    if not BOT_TOKEN or not chat_id:
+        logger.info("Telegram notification skipped (BOT_TOKEN or Chat ID missing).")
         return
 
     formatted_summary = extract_english(complete_report)
@@ -256,14 +263,17 @@ def push_report_to_telegram(filename: str, complete_report: str):
     }
     
     payload = {
-        "chat_id": ALLOWED_CHAT_ID,
+        "chat_id": chat_id,
         "text": caption,
         "parse_mode": "Markdown",
         "reply_markup": keyboard,
         "disable_web_page_preview": True
     }
-    if TOPIC_ID:
-        payload["message_thread_id"] = int(TOPIC_ID)
+    if topic_id:
+        try:
+            payload["message_thread_id"] = int(topic_id)
+        except ValueError:
+            pass
 
     try:
         resp = requests.post(url, json=payload, timeout=10)
@@ -279,7 +289,6 @@ def push_report_to_telegram(filename: str, complete_report: str):
                 logger.error(f"Failed to push Telegram alert on retry: {retry_resp.text}")
     except Exception as e:
         logger.error(f"Telegram push error: {e}")
-
 
 
 # ── Command & Callback Handlers ───────────────────────────────────────────────
@@ -386,24 +395,32 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not is_authorized(update):
         return
 
+    chat_id = str(update.effective_chat.id) if update.effective_chat else ALLOWED_CHAT_ID
+    message = update.message or (update.callback_query.message if update.callback_query else None)
+    thread_id = str(getattr(message, 'message_thread_id', '')) if message and getattr(message, 'message_thread_id', None) is not None else TOPIC_ID
+
     await update.message.reply_text("🚀 **Starting 5-Agent Macro Research Desk...**\nYou will be notified here once the report is generated!")
 
     def execute_desk():
         try:
             import main as macro_main
             macro_main.main()
+
+            # Push completion notification directly to caller chat & topic
+            filename, content = get_latest_report_content()
+            if content:
+                push_report_to_telegram(filename, content, target_chat_id=chat_id, target_topic_id=thread_id)
         except Exception as e:
             logger.error(f"Error running macro main: {e}")
             send_long_message_sync(
-                chat_id=ALLOWED_CHAT_ID or (str(update.effective_chat.id) if update.effective_chat else ""),
+                chat_id=chat_id,
                 text=f"⚠️ **Macro Research Desk Error:** `{str(e)}`",
-                topic_id=TOPIC_ID
+                topic_id=thread_id
             )
 
     thread = threading.Thread(target=execute_desk)
     thread.daemon = True
     thread.start()
-
 
 
 # ── Webhook Registration & Processing ───────────────────────────────────────
@@ -491,5 +508,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
