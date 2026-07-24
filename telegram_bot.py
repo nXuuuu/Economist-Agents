@@ -383,13 +383,20 @@ async def run_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     def execute_desk():
         try:
-            subprocess.run([sys.executable, "main.py"], check=True)
+            import main as macro_main
+            macro_main.main()
         except Exception as e:
-            logger.error(f"Error running main.py: {e}")
+            logger.error(f"Error running macro main: {e}")
+            send_long_message_sync(
+                chat_id=ALLOWED_CHAT_ID or (str(update.effective_chat.id) if update.effective_chat else ""),
+                text=f"⚠️ **Macro Research Desk Error:** `{str(e)}`",
+                topic_id=TOPIC_ID
+            )
 
     thread = threading.Thread(target=execute_desk)
     thread.daemon = True
     thread.start()
+
 
 
 # ── Webhook Registration & Processing ───────────────────────────────────────
