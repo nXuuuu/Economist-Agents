@@ -97,6 +97,13 @@ def generate_markdown_report(result_text):
     # Upload to Supabase (upsert — safe to re-run)
     upload_to_supabase(f"macro_report_{i}.md", complete_report)
 
+    # Push notification to Telegram (if configured)
+    try:
+        from telegram_bot import push_report_to_telegram
+        push_report_to_telegram(f"macro_report_{i}.md", complete_report)
+    except Exception as e:
+        print(f"\nTelegram push notice error: {e}")
+
 
 def main():
     if hasattr(sys.stdout, 'reconfigure'):

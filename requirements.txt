@@ -8,3 +8,4 @@ requests
 fpdf2
 flask
 supabase
+python-telegram-bot
