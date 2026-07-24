@@ -85,17 +85,69 @@ def get_latest_report_content() -> tuple[str, str]:
     return filename, content
 
 
+def clean_markdown_for_telegram(text: str) -> str:
+    """Format standard markdown for Telegram: converts # headers to bold emoji titles and cleans up spacing."""
+    if not text:
+        return ""
+
+    lines = text.split("\n")
+    cleaned_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        
+        # Header 1 (# ...)
+        if stripped.startswith("# "):
+            title = stripped[2:].strip().replace(" ( ", " (").replace(" )", ")")
+            cleaned_lines.append(f"\n🏛️ **{title.upper()}**\n")
+        # Header 2 (## ...)
+        elif stripped.startswith("## "):
+            title = stripped[3:].strip()
+            if "English" in title:
+                cleaned_lines.append(f"\n🇬🇧 **{title.upper()}**\n")
+            elif "Khmer" in title or "ខ្មែរ" in title:
+                cleaned_lines.append(f"\n🇰🇭 **{title}**\n")
+            else:
+                cleaned_lines.append(f"\n📌 **{title.upper()}**\n")
+        # Header 3 (### ...)
+        elif stripped.startswith("### "):
+            title = stripped[4:].strip()
+            if "Transmission" in title or "1." in title:
+                cleaned_lines.append(f"\n🔗 **{title}**")
+            elif "Phillips" in title or "Labor" in title or "2." in title:
+                cleaned_lines.append(f"\n📉 **{title}**")
+            elif "COT" in title or "Positioning" in title or "3." in title:
+                cleaned_lines.append(f"\n📊 **{title}**")
+            elif "Forecast" in title or "4." in title:
+                cleaned_lines.append(f"\n🎯 **{title}**")
+            else:
+                cleaned_lines.append(f"\n🔹 **{title}**")
+        elif stripped == "---":
+            cleaned_lines.append("──────────────────────────────")
+        else:
+            # Fix awkward spaces inside parentheses like '( 3.53% )' -> '(3.53%)'
+            fixed_line = re.sub(r'\(\s+', '(', line)
+            fixed_line = re.sub(r'\s+\)', ')', fixed_line)
+            cleaned_lines.append(fixed_line)
+
+    result = "\n".join(cleaned_lines)
+    # Remove multiple consecutive blank lines
+    result = re.sub(r'\n{3,}', '\n\n', result)
+    return result.strip()
+
+
 def extract_english(content: str) -> str:
-    """Extract English section of the report."""
+    """Extract and format English section of the report."""
     parts = content.split("---KHMER_SECTION---")
-    return parts[0].strip() if parts else content.strip()
+    raw_eng = parts[0].strip() if parts else content.strip()
+    return clean_markdown_for_telegram(raw_eng)
 
 
 def extract_khmer(content: str) -> str:
-    """Extract Khmer section of the report."""
+    """Extract and format Khmer section of the report."""
     parts = content.split("---KHMER_SECTION---")
     if len(parts) > 1 and parts[1].strip():
-        return parts[1].strip()
+        return clean_markdown_for_telegram(parts[1].strip())
     return "⚠️ មិនមានកំណែភាសាខ្មែរសម្រាប់របាយការណ៍នេះទេ។ (No Khmer version found for this report.)"
 
 
@@ -106,8 +158,7 @@ def send_long_message_sync(chat_id: str, text: str, topic_id: str = None):
         return
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     
-    # Split text into chunks
-    max_len = 4000
+    max_len = 3900
     chunks = [text[i:i + max_len] for i in range(0, len(text), max_len)]
     
     for chunk in chunks:
@@ -122,7 +173,6 @@ def send_long_message_sync(chat_id: str, text: str, topic_id: str = None):
         try:
             res = requests.post(url, json=payload, timeout=10)
             if res.status_code != 200:
-                # Retry without markdown if parsing error
                 payload.pop("parse_mode", None)
                 requests.post(url, json=payload, timeout=10)
         except Exception as e:
@@ -131,7 +181,7 @@ def send_long_message_sync(chat_id: str, text: str, topic_id: str = None):
 
 async def reply_chunks(update: Update, text: str):
     """Reply to an update splitting long text into multiple messages."""
-    max_len = 4000
+    max_len = 3900
     chunks = [text[i:i + max_len] for i in range(0, len(text), max_len)]
     for chunk in chunks:
         try:
@@ -140,7 +190,6 @@ async def reply_chunks(update: Update, text: str):
             elif update.callback_query and update.callback_query.message:
                 await update.callback_query.message.reply_text(chunk, parse_mode="Markdown", disable_web_page_preview=True)
         except Exception:
-            # Fallback without markdown formatting if Telegram markdown parser fails
             if update.message:
                 await update.message.reply_text(chunk, disable_web_page_preview=True)
             elif update.callback_query and update.callback_query.message:
@@ -154,18 +203,25 @@ def push_report_to_telegram(filename: str, complete_report: str):
         logger.info("Telegram notification skipped (BOT_TOKEN or ALLOWED_CHAT_ID missing).")
         return
 
-    summary = extract_english(complete_report)
-    lines = summary.split("\n")
-    exec_summary = []
-    for line in lines[:25]:
-        exec_summary.append(line)
-    brief_text = "\n".join(exec_summary)
+    formatted_summary = extract_english(complete_report)
+    lines = [l for l in formatted_summary.split("\n") if l.strip()]
+    
+    # Extract executive summary bullet points
+    brief_lines = []
+    for l in lines[:15]:
+        if "GLOBAL MACRO" in l or "ENGLISH VERSION" in l:
+            continue
+        brief_lines.append(l)
+    
+    brief_text = "\n".join(brief_lines)[:900]
 
     caption = (
-        f"📊 **Mr. Economist FINHUB**\n"
-        f"📄 *New Report:* `{filename}`\n\n"
-        f"{brief_text[:1200]}\n\n"
-        f"👇 *Choose language version to read full report:*"
+        f"📊 **MR. ECONOMIST FINHUB**\n"
+        f"📄 *Report Reference:* `{filename}`\n"
+        f"──────────────────────────────\n\n"
+        f"{brief_text}\n\n"
+        f"──────────────────────────────\n"
+        f"👇 *Select language version to read complete analysis:*"
     )
 
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
