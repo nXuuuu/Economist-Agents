@@ -138,16 +138,34 @@ def clean_markdown_for_telegram(text: str) -> str:
 
 def extract_english(content: str) -> str:
     """Extract and format English section of the report."""
-    parts = content.split("---KHMER_SECTION---")
-    raw_eng = parts[0].strip() if parts else content.strip()
+    if "---KHMER_SECTION---" in content:
+        raw_eng = content.split("---KHMER_SECTION---")[0].strip()
+    elif "## ភាសាខ្មែរ" in content:
+        raw_eng = content.split("## ភាសាខ្មែរ")[0].strip()
+    elif "## Khmer Version" in content:
+        raw_eng = content.split("## Khmer Version")[0].strip()
+    else:
+        raw_eng = content.strip()
     return clean_markdown_for_telegram(raw_eng)
 
 
 def extract_khmer(content: str) -> str:
     """Extract and format Khmer section of the report."""
-    parts = content.split("---KHMER_SECTION---")
-    if len(parts) > 1 and parts[1].strip():
-        return clean_markdown_for_telegram(parts[1].strip())
+    if "---KHMER_SECTION---" in content:
+        parts = content.split("---KHMER_SECTION---")
+        if len(parts) > 1 and parts[1].strip():
+            return clean_markdown_for_telegram(parts[1].strip())
+    elif "## ភាសាខ្មែរ" in content:
+        parts = content.split("## ភាសាខ្មែរ")
+        if len(parts) > 1 and parts[1].strip():
+            kh_text = "## ភាសាខ្មែរ " + parts[1].strip()
+            return clean_markdown_for_telegram(kh_text)
+    elif "## Khmer Version" in content:
+        parts = content.split("## Khmer Version")
+        if len(parts) > 1 and parts[1].strip():
+            kh_text = "## Khmer Version " + parts[1].strip()
+            return clean_markdown_for_telegram(kh_text)
+
     return "⚠️ មិនមានកំណែភាសាខ្មែរសម្រាប់របាយការណ៍នេះទេ។ (No Khmer version found for this report.)"
 
 

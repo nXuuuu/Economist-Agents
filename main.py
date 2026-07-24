@@ -83,7 +83,7 @@ def generate_markdown_report(result_text):
     complete_report += "## English Version\n\n"
     complete_report += english_content
     if khmer_content:
-        complete_report += "\n\n---\n\n"
+        complete_report += "\n\n---\n---KHMER_SECTION---\n"
         complete_report += "## ភាសាខ្មែរ (Khmer Version)\n\n"
         complete_report += khmer_content
 
