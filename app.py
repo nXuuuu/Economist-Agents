@@ -134,7 +134,21 @@ def get_report(filename):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def start_background_telegram_bot():
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if token:
+        try:
+            import telegram_bot
+            t = threading.Thread(target=telegram_bot.main, daemon=True)
+            t.start()
+            print("Telegram Bot worker started in background thread.")
+        except Exception as e:
+            print(f"Failed to start background Telegram bot: {e}")
+
+# Automatically launch Telegram Bot worker if configured
+start_background_telegram_bot()
+
 if __name__ == '__main__':
-    # Allow network access
-    print("Serving Monko Executive Suite on http://0.0.0.0:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    print(f"Serving Monko Executive Suite on http://0.0.0.0:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False)
