@@ -270,9 +270,16 @@ def push_report_to_telegram(filename: str, complete_report: str):
         if resp.status_code == 200:
             logger.info(f"Successfully pushed report alert to Telegram ({filename})")
         else:
-            logger.error(f"Failed to push Telegram alert: {resp.text}")
+            logger.error(f"Failed to push Telegram alert with Markdown: {resp.text}. Retrying plain text...")
+            payload.pop("parse_mode", None)
+            retry_resp = requests.post(url, json=payload, timeout=10)
+            if retry_resp.status_code == 200:
+                logger.info(f"Successfully pushed report alert to Telegram on retry ({filename})")
+            else:
+                logger.error(f"Failed to push Telegram alert on retry: {retry_resp.text}")
     except Exception as e:
         logger.error(f"Telegram push error: {e}")
+
 
 
 # ── Command & Callback Handlers ───────────────────────────────────────────────
