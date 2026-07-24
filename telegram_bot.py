@@ -107,7 +107,7 @@ def clean_markdown_for_telegram_html(text: str) -> str:
 
         # Horizontal Dividers
         if stripped in ("---", "____________________", "--------------------", "════════════════════"):
-            cleaned_lines.append("──────────────────────────────")
+            cleaned_lines.append("\n──────────────────────────────\n")
             continue
 
         # Headers (#, ##, ###)
@@ -116,33 +116,33 @@ def clean_markdown_for_telegram_html(text: str) -> str:
             title = re.sub(r'\(\s+', '(', title)
             title = re.sub(r'\s+\)', ')', title)
             safe_title = html.escape(title, quote=False)
-            cleaned_lines.append(f"\n🏛️ <b>{safe_title.upper()}</b>\n")
+            cleaned_lines.append(f"\n\n🏛️ <b>{safe_title.upper()}</b>\n")
             continue
 
         if stripped.startswith("## "):
             title = html.unescape(stripped[3:].strip())
             safe_title = html.escape(title, quote=False)
             if "English" in safe_title:
-                cleaned_lines.append(f"\n🇬🇧 <b>{safe_title.upper()}</b>\n")
+                cleaned_lines.append(f"\n\n🇬🇧 <b>{safe_title.upper()}</b>\n")
             elif "Khmer" in safe_title or "ខ្មែរ" in safe_title:
-                cleaned_lines.append(f"\n🇰🇭 <b>{safe_title}</b>\n")
+                cleaned_lines.append(f"\n\n🇰🇭 <b>{safe_title}</b>\n")
             else:
-                cleaned_lines.append(f"\n📌 <b>{safe_title.upper()}</b>\n")
+                cleaned_lines.append(f"\n\n📌 <b>{safe_title.upper()}</b>\n")
             continue
 
         if stripped.startswith("### "):
             title = html.unescape(stripped[4:].strip())
             safe_title = html.escape(title, quote=False)
             if "Transmission" in safe_title or "1." in safe_title:
-                cleaned_lines.append(f"\n🔗 <b>{safe_title}</b>")
+                cleaned_lines.append(f"\n\n🔗 <b>{safe_title}</b>\n")
             elif "Phillips" in safe_title or "Labor" in safe_title or "FRED" in safe_title or "2." in safe_title:
-                cleaned_lines.append(f"\n📉 <b>{safe_title}</b>")
+                cleaned_lines.append(f"\n\n📉 <b>{safe_title}</b>\n")
             elif "COT" in safe_title or "Positioning" in safe_title or "3." in safe_title:
-                cleaned_lines.append(f"\n📊 <b>{safe_title}</b>")
+                cleaned_lines.append(f"\n\n📊 <b>{safe_title}</b>\n")
             elif "Forecast" in safe_title or "Calendar" in safe_title or "4." in safe_title:
-                cleaned_lines.append(f"\n🎯 <b>{safe_title}</b>")
+                cleaned_lines.append(f"\n\n🎯 <b>{safe_title}</b>\n")
             else:
-                cleaned_lines.append(f"\n🔹 <b>{safe_title}</b>")
+                cleaned_lines.append(f"\n\n🔹 <b>{safe_title}</b>\n")
             continue
 
         # Regular Lines: Fix spacing around colons and parentheses
@@ -168,14 +168,17 @@ def clean_markdown_for_telegram_html(text: str) -> str:
                 final_parts.append(html.escape(html.unescape(p), quote=False))
         processed = "".join(final_parts)
 
-        # Format List Items / Bullets cleanly
+        # Format List Items / Bullets cleanly with extra spacing between numbered steps
         stripped_proc = processed.strip()
-        if stripped_proc.startswith("* ") or stripped_proc.startswith("- "):
+        if re.match(r'^\d+\.\s+', stripped_proc):
+            processed = "\n" + stripped_proc
+        elif stripped_proc.startswith("* ") or stripped_proc.startswith("- "):
             indent = len(processed) - len(processed.lstrip())
             prefix = "  " * (indent // 2) + "• "
             processed = prefix + stripped_proc[2:].strip()
 
         cleaned_lines.append(processed)
+
 
     result = "\n".join(cleaned_lines)
     result = re.sub(r'\n{3,}', '\n\n', result)
